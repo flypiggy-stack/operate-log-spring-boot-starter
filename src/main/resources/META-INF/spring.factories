@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.flypiggy.operate.log.spring.boot.starter.configuration.JdbcConfiguration
