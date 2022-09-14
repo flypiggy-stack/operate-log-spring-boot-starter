@@ -10,13 +10,13 @@ Operate-Log使用starter依赖，实现web接口日志输入到数据库；以�
 
 ```xml
 <dependency>
-    <groupId>org.flypiggy</groupId>
+    <groupId>io.github.flypiggy-stack</groupId>
     <artifactId>operate-log-spring-boot-starter</artifactId>
     <version>1.1.0</version>
 </dependency>
 ```
 
-1. maven中央仓库pom尚未上传
+1. 直接引用maven中央仓库依赖
 2. 直接down下代码，mvn deploy到私有nesux或者阿里镜像仓库（一定要放到仓库，不然maven依赖无法传递）
 
 #### 使用说明
