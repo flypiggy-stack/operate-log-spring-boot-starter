@@ -40,4 +40,8 @@ spring.operate-log.class-info-value：'classInfo' 字段引用 '@Api' 注解中�
 spring.operate-log.exclude.api：需要排除的，不要扫描的接口；以k-v形式；默认空，非必填项 <br>
 spring.operate-log.exclude.http-method：需要排除的，http请求方式；默认空，非必填项 <br>
 **操作人**
-可直接使用LogOperatorContext.ser("操作人信息");
+可直接使用LogOperatorContext.set("操作人信息");
+
+#### 未来新增特性
+1. 增加ES数据源
+2. 增加注解，直接使用注解来拦截接口
