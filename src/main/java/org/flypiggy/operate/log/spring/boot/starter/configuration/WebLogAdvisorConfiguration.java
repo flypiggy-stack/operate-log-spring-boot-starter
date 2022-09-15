@@ -10,7 +10,7 @@ import org.flypiggy.operate.log.spring.boot.starter.properties.Jdbc;
 import org.flypiggy.operate.log.spring.boot.starter.properties.OperateLog;
 import org.flypiggy.operate.log.spring.boot.starter.repository.LogRepository;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
-import org.springframework.boot.autoconfigure.AutoConfigureBefore;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +29,7 @@ import static org.flypiggy.operate.log.spring.boot.starter.properties.Datasource
 @Slf4j
 @Configuration
 @ConditionalOnProperty(prefix = "spring.operate-log", name = "enable", havingValue = "true")
-@AutoConfigureBefore(OperateLog.class)
+@AutoConfigureAfter(OperateLog.class)
 public class WebLogAdvisorConfiguration {
     private static final String expressionBase = "within(%s..*)";
     private final OperateLog operateLog;

@@ -1,2 +1,3 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.flypiggy.operate.log.spring.boot.starter.configuration.WebLogAdvisorConfiguration
+org.flypiggy.operate.log.spring.boot.starter.configuration.WebLogAdvisorConfiguration,\
+org.flypiggy.operate.log.spring.boot.starter.properties.OperateLog
