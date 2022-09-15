@@ -8,13 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.flypiggy.operate.log.spring.boot.starter.context.LogOperatorContext;
+import org.flypiggy.operate.log.spring.boot.starter.datasource.DatasourceApi;
 import org.flypiggy.operate.log.spring.boot.starter.exception.OperateLogException;
 import org.flypiggy.operate.log.spring.boot.starter.model.Log;
 import org.flypiggy.operate.log.spring.boot.starter.properties.ClassInfoEnum;
 import org.flypiggy.operate.log.spring.boot.starter.properties.Exclude;
 import org.flypiggy.operate.log.spring.boot.starter.properties.OperateLog;
 import org.springframework.http.HttpMethod;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -41,7 +41,10 @@ public class WebLogAdvice implements MethodInterceptor {
      * Exclude a type of request method interface.
      */
     private static Set<String> excludeHttpMethods = new HashSet<>();
-    private final JdbcTemplate operateLogJdbcTemplate;
+    /**
+     * datasource: Inject the corresponding storage data source according to the configuration.
+     */
+    private final DatasourceApi datasourceApi;
     /**
      * SQL for new records.
      */
@@ -67,10 +70,10 @@ public class WebLogAdvice implements MethodInterceptor {
      */
     private boolean excludeApiIsnull = true;
 
-    public WebLogAdvice(JdbcTemplate operateLogJdbcTemplate, OperateLog operateLog) {
-        this.operateLogJdbcTemplate = operateLogJdbcTemplate;
+    public WebLogAdvice(DatasourceApi datasourceApi, OperateLog operateLog) {
+        this.datasourceApi = datasourceApi;
         String insertSqlBase = "insert into %s (ip, operator, method, uri, class_info, method_info, success, request_body, response_body, error_message) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        insertSql = String.format(insertSqlBase, operateLog.getTableName());
+        insertSql = String.format(insertSqlBase, operateLog.getJdbc().getTableName());
         classInfoEnum = operateLog.getClassInfoValue();
         classInfoIsTags = operateLog.getClassInfoValue().equals(ClassInfoEnum.TAGS);
         checkExclude(operateLog);
@@ -229,8 +232,7 @@ public class WebLogAdvice implements MethodInterceptor {
         if (log.isDebugEnabled()) {
             log.debug("{}", logVo);
         }
-        operateLogJdbcTemplate.update(insertSql, logVo.getIp(), logVo.getOperator(), logVo.getMethod(), logVo.getUri(), logVo.getClassInfo(),
-                logVo.getMethodInfo(), logVo.getSuccess(), logVo.getRequestBody(), logVo.getResponseBody(), logVo.getErrorMessage());
+        datasourceApi.save(logVo, insertSql);
     }
 
     /**

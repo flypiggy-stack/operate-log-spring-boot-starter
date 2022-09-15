@@ -18,11 +18,6 @@ public class OperateLog {
     private Boolean enable = false;
 
     /**
-     * Table name of the storage operation record.
-     */
-    private String tableName = "web_log";
-
-    /**
      * The 'classInfo' field references the value in the '@Api' annotation; when 'tags', only the first parameter is used.
      */
     private ClassInfoEnum classInfoValue = TAGS;
@@ -34,4 +29,21 @@ public class OperateLog {
      * The package that needs to intercept the operation log and all its following package API interfaces.
      */
     private String[] apiPackagePath;
+
+    /**
+     * Select a data source to store operation logs.
+     */
+    private DatasourceEnum datasourceType = DatasourceEnum.JDBC;
+
+    /**
+     * elasticsearch related configuration.
+     */
+    @NestedConfigurationProperty
+    private Elasticsearch elasticsearch = new Elasticsearch();
+
+    /**
+     * jdbc related configuration.
+     */
+    @NestedConfigurationProperty
+    private Jdbc jdbc = new Jdbc();
 }
