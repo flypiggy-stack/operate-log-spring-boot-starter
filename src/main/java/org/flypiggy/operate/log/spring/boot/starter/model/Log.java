@@ -1,12 +1,11 @@
 package org.flypiggy.operate.log.spring.boot.starter.model;
 
 import lombok.Data;
-import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.time.LocalDateTime;
 
 @Data
-@Document(indexName = "#{@elasticsearch.indexName}")
+// @Document(indexName = "#{@elasticsearch.indexName}")
 public class Log {
     /**
      * primary key

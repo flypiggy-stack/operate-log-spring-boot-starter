@@ -15,7 +15,7 @@ public class ElasticsearchRepository implements DatasourceApi {
     private final LogRepository logRepository;
 
     @Override
-    public void save(Log logVo, String sql) {
+    public void save(Log logVo) {
         logRepository.save(logVo);
     }
 }

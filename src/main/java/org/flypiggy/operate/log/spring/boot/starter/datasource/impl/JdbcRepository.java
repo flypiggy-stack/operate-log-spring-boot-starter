@@ -12,11 +12,12 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "spring.operate-log", name = "datasource-type", havingValue = "jdbc")
 public class JdbcRepository implements DatasourceApi {
 
-    private JdbcTemplate operateLogJdbcTemplate;
+    private final JdbcTemplate operateLogJdbcTemplate;
+    private final String insertSql;
 
     @Override
-    public void save(Log logVo, String sql) {
-        operateLogJdbcTemplate.update(sql, logVo.getIp(), logVo.getOperator(), logVo.getMethod(), logVo.getUri(), logVo.getClassInfo(),
+    public void save(Log logVo) {
+        operateLogJdbcTemplate.update(insertSql, logVo.getIp(), logVo.getOperator(), logVo.getMethod(), logVo.getUri(), logVo.getClassInfo(),
                 logVo.getMethodInfo(), logVo.getSuccess(), logVo.getRequestBody(), logVo.getResponseBody(), logVo.getErrorMessage());
     }
 }

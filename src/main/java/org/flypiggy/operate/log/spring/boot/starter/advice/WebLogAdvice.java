@@ -46,10 +46,6 @@ public class WebLogAdvice implements MethodInterceptor {
      */
     private final DatasourceApi datasourceApi;
     /**
-     * SQL for new records.
-     */
-    private final String insertSql;
-    /**
      * see to {@link ClassInfoEnum}
      */
     private final ClassInfoEnum classInfoEnum;
@@ -72,8 +68,6 @@ public class WebLogAdvice implements MethodInterceptor {
 
     public WebLogAdvice(DatasourceApi datasourceApi, OperateLog operateLog) {
         this.datasourceApi = datasourceApi;
-        String insertSqlBase = "insert into %s (ip, operator, method, uri, class_info, method_info, success, request_body, response_body, error_message) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        insertSql = String.format(insertSqlBase, operateLog.getJdbc().getTableName());
         classInfoEnum = operateLog.getClassInfoValue();
         classInfoIsTags = operateLog.getClassInfoValue().equals(ClassInfoEnum.TAGS);
         checkExclude(operateLog);
@@ -232,7 +226,7 @@ public class WebLogAdvice implements MethodInterceptor {
         if (log.isDebugEnabled()) {
             log.debug("{}", logVo);
         }
-        datasourceApi.save(logVo, insertSql);
+        datasourceApi.save(logVo);
     }
 
     /**

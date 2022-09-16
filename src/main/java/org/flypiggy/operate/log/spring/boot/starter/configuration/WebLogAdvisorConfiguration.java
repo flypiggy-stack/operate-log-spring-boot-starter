@@ -46,7 +46,9 @@ public class WebLogAdvisorConfiguration {
         JdbcTemplate jdbcTemplate = jdbcConfig.getJdbcTemplate();
         jdbcConfig.initCheck(jdbcTemplate, operateLog.getJdbc().getTableName());
         AspectJExpressionPointcutAdvisor advisor = getPointcutAdvisor();
-        advisor.setAdvice(new WebLogAdvice(new JdbcRepository(jdbcTemplate), operateLog));
+        String insertSqlBase = "insert into %s (ip, operator, method, uri, class_info, method_info, success, request_body, response_body, error_message) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String insertSql = String.format(insertSqlBase, operateLog.getJdbc().getTableName());
+        advisor.setAdvice(new WebLogAdvice(new JdbcRepository(jdbcTemplate, insertSql), operateLog));
         return advisor;
     }
 

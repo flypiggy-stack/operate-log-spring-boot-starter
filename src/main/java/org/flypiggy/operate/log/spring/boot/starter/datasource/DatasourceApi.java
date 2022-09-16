@@ -4,5 +4,5 @@ import org.flypiggy.operate.log.spring.boot.starter.model.Log;
 
 public interface DatasourceApi {
 
-    void save(Log log, String sql);
+    void save(Log log);
 }
