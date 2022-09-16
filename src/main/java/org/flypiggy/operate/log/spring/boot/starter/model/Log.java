@@ -5,7 +5,6 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-// @Document(indexName = "#{@elasticsearch.indexName}")
 public class Log {
     /**
      * primary key

@@ -1,14 +1,15 @@
 package org.flypiggy.operate.log.spring.boot.starter.configuration;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import lombok.extern.slf4j.Slf4j;
 import org.flypiggy.operate.log.spring.boot.starter.advice.WebLogAdvice;
+import org.flypiggy.operate.log.spring.boot.starter.datasource.DatasourceApi;
 import org.flypiggy.operate.log.spring.boot.starter.datasource.impl.ElasticsearchRepository;
 import org.flypiggy.operate.log.spring.boot.starter.datasource.impl.JdbcRepository;
 import org.flypiggy.operate.log.spring.boot.starter.exception.OperateLogException;
 import org.flypiggy.operate.log.spring.boot.starter.properties.Elasticsearch;
 import org.flypiggy.operate.log.spring.boot.starter.properties.Jdbc;
 import org.flypiggy.operate.log.spring.boot.starter.properties.OperateLog;
-import org.flypiggy.operate.log.spring.boot.starter.repository.LogRepository;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -44,25 +45,27 @@ public class WebLogAdvisorConfiguration {
     public AspectJExpressionPointcutAdvisor jdbcConfigurableAdvisor(DataSourceProperties dataSourceProperties) {
         JdbcConfig jdbcConfig = new JdbcConfig(dataSourceProperties);
         JdbcTemplate jdbcTemplate = jdbcConfig.getJdbcTemplate();
-        jdbcConfig.initCheck(jdbcTemplate, operateLog.getJdbc().getTableName());
-        AspectJExpressionPointcutAdvisor advisor = getPointcutAdvisor();
+        String tableName = operateLog.getJdbc().getTableName();
+        jdbcConfig.initCheck(jdbcTemplate, tableName);
         String insertSqlBase = "insert into %s (ip, operator, method, uri, class_info, method_info, success, request_body, response_body, error_message) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        String insertSql = String.format(insertSqlBase, operateLog.getJdbc().getTableName());
-        advisor.setAdvice(new WebLogAdvice(new JdbcRepository(jdbcTemplate, insertSql), operateLog));
-        return advisor;
+        String insertSql = String.format(insertSqlBase, tableName);
+        return getPointcutAdvisor(new JdbcRepository(jdbcTemplate, insertSql));
     }
 
 
     @Bean
     @ConditionalOnProperty(prefix = "spring.operate-log", name = "datasource-type", havingValue = "elasticsearch")
-    public AspectJExpressionPointcutAdvisor esConfigurableAdvisor(LogRepository logRepository) {
-        AspectJExpressionPointcutAdvisor advisor = getPointcutAdvisor();
-        advisor.setAdvice(new WebLogAdvice(new ElasticsearchRepository(logRepository), operateLog));
-        return advisor;
+    public AspectJExpressionPointcutAdvisor esConfigurableAdvisor() {
+        ElasticsearchConfig elasticsearchConfig = new ElasticsearchConfig();
+        ElasticsearchClient client = elasticsearchConfig.getElasticsearchClient();
+        String indexName = operateLog.getElasticsearch().getIndexName();
+        elasticsearchConfig.initCheck(client, indexName);
+        return getPointcutAdvisor(new ElasticsearchRepository(indexName, client));
     }
 
-    private AspectJExpressionPointcutAdvisor getPointcutAdvisor() {
+    private AspectJExpressionPointcutAdvisor getPointcutAdvisor(DatasourceApi datasourceApi) {
         AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
+        advisor.setAdvice(new WebLogAdvice(datasourceApi, operateLog));
         String expression = getExpression();
         log.info("OPERATE-LOG Scan package expression:{}", expression);
         advisor.setExpression(expression);
@@ -111,5 +114,6 @@ public class WebLogAdvisorConfiguration {
                 throw new OperateLogException("Please check configuration file properties \"spring.operate-log.elasticsearch.index-name\", don't use capital letters");
             }
         }
+        log.info("OPERATE-LOG We will use {} as the data source for storing operation logs.", operateLog.getDatasourceType());
     }
 }
