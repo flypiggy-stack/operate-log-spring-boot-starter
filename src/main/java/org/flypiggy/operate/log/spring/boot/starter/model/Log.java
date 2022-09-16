@@ -2,7 +2,7 @@ package org.flypiggy.operate.log.spring.boot.starter.model;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 public class Log {
@@ -53,10 +53,10 @@ public class Log {
     /**
      * create time
      */
-    private LocalDateTime createTime = LocalDateTime.now();
+    private ZonedDateTime createTime = ZonedDateTime.now();
     /**
      * update time
      */
-    private LocalDateTime updateTime = LocalDateTime.now();
+    private ZonedDateTime updateTime = ZonedDateTime.now();
 
 }

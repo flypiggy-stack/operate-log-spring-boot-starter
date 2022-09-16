@@ -1,9 +1,11 @@
 package org.flypiggy.operate.log.spring.boot.starter.advice;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -30,8 +32,8 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class WebLogAdvice implements MethodInterceptor {
+    private static final ObjectMapper objectMapper;
 
-    private static final ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
     /**
      * Interface exclusion.
      * Set support? and *(wildcards) Matches.
@@ -65,6 +67,11 @@ public class WebLogAdvice implements MethodInterceptor {
      * Whether to be null of 'spring.operate-log.exclude.api'
      */
     private boolean excludeApiIsnull = true;
+
+    static {
+        objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.registerModules(new ParameterNamesModule(), new Jdk8Module(), new JavaTimeModule());
+    }
 
     public WebLogAdvice(DatasourceApi datasourceApi, OperateLog operateLog) {
         this.datasourceApi = datasourceApi;
@@ -103,7 +110,7 @@ public class WebLogAdvice implements MethodInterceptor {
             if (Objects.isNull(objs) || objs.length == 0) return null;
             else if (objs.length == 1) return objectMapper.writeValueAsString(objs[0]);
             else return objectMapper.writeValueAsString(objs);
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             log.warn("Object to Json string error!");
             return null;
         }
@@ -214,7 +221,7 @@ public class WebLogAdvice implements MethodInterceptor {
                     if (!Objects.isNull(list) && !Objects.equals("", list.get(0))) {
                         classInfo = list.get(0);
                     }
-                } catch (JsonProcessingException e) {
+                } catch (Exception e) {
                     throw new OperateLogException("Error get class info!");
                 }
             }
@@ -236,8 +243,7 @@ public class WebLogAdvice implements MethodInterceptor {
     public Object invoke(MethodInvocation invocation) {
         try {
             if (Objects.isNull(RequestContextHolder.getRequestAttributes())) {
-                log.warn("OPERATE-LOG The method is not a web interface! " +
-                        "If you do not want to see this prompt, you need to reconfigurate 'spring.operate-log.api-package-path' to ensure that only web api methods are in these packages.");
+                log.warn("OPERATE-LOG The method is not a web interface! " + "If you do not want to see this prompt, you need to reconfigurate 'spring.operate-log.api-package-path' to ensure that only web api methods are in these packages.");
             }
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
             if (log.isDebugEnabled()) {

@@ -26,7 +26,7 @@ public class JdbcConfig {
             "    response_body     text                                       null comment 'responder',\n" +
             "    error_message     text                                       null comment 'error message',\n" +
             "    create_time       datetime  default CURRENT_TIMESTAMP        not null comment 'create time',\n" +
-            "    update_time       timestamp default CURRENT_TIMESTAMP        not null on update CURRENT_TIMESTAMP comment 'update time'\n" +
+            "    update_time       datetime  default CURRENT_TIMESTAMP        not null on update CURRENT_TIMESTAMP comment 'update time'\n" +
             ")";
     private static final String checkTableSql = "select count(1) from information_schema.tables where table_name = ? and table_schema = ? limit 1";
     private static final String checkDatabaseSql = "select 1";
