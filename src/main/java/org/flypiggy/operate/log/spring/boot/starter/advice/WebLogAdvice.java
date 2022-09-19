@@ -70,7 +70,7 @@ public class WebLogAdvice implements MethodInterceptor {
     /**
      * Whether to print the warning log during execution.
      */
-    private boolean waningLog;
+    private final boolean waningLog;
 
     static {
         objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -105,22 +105,6 @@ public class WebLogAdvice implements MethodInterceptor {
             e.printStackTrace();
         }
         return defaultValue;
-    }
-
-    /**
-     * Object to Json string.
-     */
-    private String getJsonStr(Object... objs) {
-        try {
-            if (Objects.isNull(objs) || objs.length == 0) return null;
-            else if (objs.length == 1) return objectMapper.writeValueAsString(objs[0]);
-            else return objectMapper.writeValueAsString(objs);
-        } catch (Exception e) {
-            if (waningLog) {
-                log.warn("Object to Json string error!");
-            }
-            return null;
-        }
     }
 
     /**
@@ -252,7 +236,7 @@ public class WebLogAdvice implements MethodInterceptor {
             if (waningLog && Objects.isNull(RequestContextHolder.getRequestAttributes())) {
                 log.warn("OPERATE-LOG The method is not a web interface! " + "If you do not want to see this prompt, you need to reconfigurate 'spring.operate-log.api-package-path' to ensure that only web api methods are in these packages.");
             }
-            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+            HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
             if (log.isDebugEnabled()) {
                 log.debug("------------------------------------------------------------------------------");
                 log.debug("Request source: {}", getIp(request));
@@ -327,7 +311,17 @@ public class WebLogAdvice implements MethodInterceptor {
         Method method = invocation.getMethod();
         method.setAccessible(true);
         log.setMethodInfo(getAnnotationValue(method.getAnnotation(io.swagger.annotations.ApiOperation.class), "value", method.getName()));
-        log.setRequestBody(getJsonStr(invocation.getArguments()));
+        Object[] arguments = invocation.getArguments();
+        if (arguments.length == 1) {
+            log.setRequestBody("[" + arguments[0] + "]");
+        } else if (arguments.length >= 1) {
+            StringBuilder requestStr = new StringBuilder();
+            for (Object argument : arguments) {
+                requestStr.append(argument).append(",");
+            }
+            requestStr = new StringBuilder("[" + requestStr.substring(0, requestStr.length() - 1) + "]");
+            log.setRequestBody(requestStr.toString());
+        }
         return log;
     }
 }
