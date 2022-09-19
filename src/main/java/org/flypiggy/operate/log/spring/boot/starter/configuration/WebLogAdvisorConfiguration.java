@@ -57,10 +57,9 @@ public class WebLogAdvisorConfiguration {
     @ConditionalOnProperty(prefix = "spring.operate-log", name = "store-type", havingValue = "elasticsearch")
     public AspectJExpressionPointcutAdvisor esConfigurableAdvisor() {
         ElasticsearchConfig elasticsearchConfig = new ElasticsearchConfig();
-        ElasticsearchClient client = elasticsearchConfig.getElasticsearchClient();
-        String indexName = operateLog.getElasticsearch().getIndexName();
-        elasticsearchConfig.initCheck(client, indexName);
-        return getPointcutAdvisor(new ElasticsearchRepository(client, indexName));
+        ElasticsearchClient client = elasticsearchConfig.getElasticsearchClient(operateLog.getElasticsearch());
+        Elasticsearch.Index index = operateLog.getElasticsearch().getIndex();
+        return getPointcutAdvisor(new ElasticsearchRepository(client, index));
     }
 
     private AspectJExpressionPointcutAdvisor getPointcutAdvisor(DatasourceApi datasourceApi) {
@@ -106,7 +105,7 @@ public class WebLogAdvisorConfiguration {
             if (Objects.isNull(elasticsearch)) {
                 throw new OperateLogException("Please check the package path in the configuration file! \n\tproperties: spring.operate-log.elasticsearch");
             }
-            String indexName = elasticsearch.getIndexName();
+            String indexName = elasticsearch.getIndex().getName();
             if (Objects.isNull(indexName) || "".equals(indexName)) {
                 throw new OperateLogException("Please check the package path in the configuration file! \n\tproperties: spring.operate-log.elasticsearch.index-name");
             }

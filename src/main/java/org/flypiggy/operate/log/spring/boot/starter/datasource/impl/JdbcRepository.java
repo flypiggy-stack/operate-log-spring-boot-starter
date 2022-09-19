@@ -3,11 +3,9 @@ package org.flypiggy.operate.log.spring.boot.starter.datasource.impl;
 import lombok.AllArgsConstructor;
 import org.flypiggy.operate.log.spring.boot.starter.datasource.DatasourceApi;
 import org.flypiggy.operate.log.spring.boot.starter.model.Log;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 @AllArgsConstructor
-@ConditionalOnProperty(prefix = "spring.operate-log", name = "store-type", havingValue = "jdbc")
 public class JdbcRepository implements DatasourceApi {
 
     private final JdbcTemplate operateLogJdbcTemplate;
