@@ -96,12 +96,12 @@ public class WebLogAdvisorConfiguration {
         if (Objects.isNull(apiPackagePathArr) || apiPackagePathArr.length == 0) {
             throw new OperateLogException("Please check the package path in the configuration file! \n\tproperties: spring.operate-log.api-package-path");
         }
-        if (JDBC.equals(operateLog.getDatasourceType())) {
+        if (JDBC.equals(operateLog.getStoreType())) {
             Jdbc jdbc = operateLog.getJdbc();
             if (Objects.isNull(jdbc)) {
                 throw new OperateLogException("Please check the package path in the configuration file! \n\tproperties: spring.operate-log.jdbc");
             }
-        } else if (ELASTICSEARCH.equals(operateLog.getDatasourceType())) {
+        } else if (ELASTICSEARCH.equals(operateLog.getStoreType())) {
             Elasticsearch elasticsearch = operateLog.getElasticsearch();
             if (Objects.isNull(elasticsearch)) {
                 throw new OperateLogException("Please check the package path in the configuration file! \n\tproperties: spring.operate-log.elasticsearch");
@@ -114,6 +114,6 @@ public class WebLogAdvisorConfiguration {
                 throw new OperateLogException("Please check configuration file properties \"spring.operate-log.elasticsearch.index-name\", don't use capital letters");
             }
         }
-        log.info("OPERATE-LOG We will use {} as the data source for storing operation logs.", operateLog.getDatasourceType());
+        log.info("OPERATE-LOG We will use {} as the data source for storing operation logs.", operateLog.getStoreType());
     }
 }
