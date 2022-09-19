@@ -41,7 +41,7 @@ public class WebLogAdvisorConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.operate-log", name = "datasource-type", havingValue = "jdbc", matchIfMissing = true)
+    @ConditionalOnProperty(prefix = "spring.operate-log", name = "store-type", havingValue = "jdbc", matchIfMissing = true)
     public AspectJExpressionPointcutAdvisor jdbcConfigurableAdvisor(DataSourceProperties dataSourceProperties) {
         JdbcConfig jdbcConfig = new JdbcConfig(dataSourceProperties);
         JdbcTemplate jdbcTemplate = jdbcConfig.getJdbcTemplate();
@@ -54,13 +54,13 @@ public class WebLogAdvisorConfiguration {
 
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.operate-log", name = "datasource-type", havingValue = "elasticsearch")
+    @ConditionalOnProperty(prefix = "spring.operate-log", name = "store-type", havingValue = "elasticsearch")
     public AspectJExpressionPointcutAdvisor esConfigurableAdvisor() {
         ElasticsearchConfig elasticsearchConfig = new ElasticsearchConfig();
         ElasticsearchClient client = elasticsearchConfig.getElasticsearchClient();
         String indexName = operateLog.getElasticsearch().getIndexName();
         elasticsearchConfig.initCheck(client, indexName);
-        return getPointcutAdvisor(new ElasticsearchRepository(indexName, client));
+        return getPointcutAdvisor(new ElasticsearchRepository(client, indexName));
     }
 
     private AspectJExpressionPointcutAdvisor getPointcutAdvisor(DatasourceApi datasourceApi) {

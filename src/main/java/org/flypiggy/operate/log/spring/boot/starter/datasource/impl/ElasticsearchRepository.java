@@ -6,18 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.flypiggy.operate.log.spring.boot.starter.datasource.DatasourceApi;
 import org.flypiggy.operate.log.spring.boot.starter.model.Log;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 @Slf4j
-@Component
 @AllArgsConstructor
-@ConditionalOnProperty(prefix = "spring.operate-log", name = "datasource-type", havingValue = "elasticsearch")
+@ConditionalOnProperty(prefix = "spring.operate-log", name = "store-type", havingValue = "elasticsearch")
 public class ElasticsearchRepository implements DatasourceApi {
 
-    private final String index;
     private final ElasticsearchClient client;
+    private final String index;
 
     @Override
     public void save(Log logVo) {
