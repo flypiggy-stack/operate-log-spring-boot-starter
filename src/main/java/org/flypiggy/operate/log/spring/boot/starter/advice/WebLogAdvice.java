@@ -67,6 +67,10 @@ public class WebLogAdvice implements MethodInterceptor {
      * Whether to be null of 'spring.operate-log.exclude.api'
      */
     private boolean excludeApiIsnull = true;
+    /**
+     * Whether to print the warning log during execution.
+     */
+    private boolean waningLog;
 
     static {
         objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -75,6 +79,7 @@ public class WebLogAdvice implements MethodInterceptor {
 
     public WebLogAdvice(DatasourceApi datasourceApi, OperateLog operateLog) {
         this.datasourceApi = datasourceApi;
+        waningLog = operateLog.getWaningLog();
         classInfoEnum = operateLog.getClassInfoValue();
         classInfoIsTags = operateLog.getClassInfoValue().equals(ClassInfoEnum.TAGS);
         checkExclude(operateLog);
@@ -105,13 +110,15 @@ public class WebLogAdvice implements MethodInterceptor {
     /**
      * Object to Json string.
      */
-    private static String getJsonStr(Object... objs) {
+    private String getJsonStr(Object... objs) {
         try {
             if (Objects.isNull(objs) || objs.length == 0) return null;
             else if (objs.length == 1) return objectMapper.writeValueAsString(objs[0]);
             else return objectMapper.writeValueAsString(objs);
         } catch (Exception e) {
-            log.warn("Object to Json string error!");
+            if (waningLog) {
+                log.warn("Object to Json string error!");
+            }
             return null;
         }
     }
@@ -242,7 +249,7 @@ public class WebLogAdvice implements MethodInterceptor {
     @Override
     public Object invoke(MethodInvocation invocation) {
         try {
-            if (Objects.isNull(RequestContextHolder.getRequestAttributes())) {
+            if (waningLog && Objects.isNull(RequestContextHolder.getRequestAttributes())) {
                 log.warn("OPERATE-LOG The method is not a web interface! " + "If you do not want to see this prompt, you need to reconfigurate 'spring.operate-log.api-package-path' to ensure that only web api methods are in these packages.");
             }
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
@@ -275,7 +282,9 @@ public class WebLogAdvice implements MethodInterceptor {
                 insert(log);
             }
         } catch (Throwable e) {
-            log.warn("OPERATE LOG Please report the error message, we will optimize the code after receiving it.");
+            if (waningLog) {
+                log.warn("OPERATE-LOG Please report the error message, we will optimize the code after receiving it.");
+            }
         }
         return null;
     }

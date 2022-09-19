@@ -31,9 +31,9 @@ public class OperateLog {
     private String[] apiPackagePath;
 
     /**
-     * Select a data source to store operation logs.
+     * Select a data source type to store operation logs.
      */
-    private DatasourceEnum datasourceType = DatasourceEnum.JDBC;
+    private DatasourceEnum storeType = DatasourceEnum.JDBC;
 
     /**
      * elasticsearch related configuration.
@@ -46,4 +46,9 @@ public class OperateLog {
      */
     @NestedConfigurationProperty
     private Jdbc jdbc = new Jdbc();
+
+    /**
+     * Whether to print the warning log during execution.
+     */
+    private Boolean waningLog = false;
 }

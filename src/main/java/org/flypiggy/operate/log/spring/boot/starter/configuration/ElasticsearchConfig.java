@@ -28,7 +28,7 @@ public class ElasticsearchConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModules(new ParameterNamesModule(), new Jdk8Module(), new JavaTimeModule());
         ElasticsearchTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper(objectMapper));
-        log.info("OPERATE LOG Initialize elasticsearch data source connection.");
+        log.info("OPERATE-LOG Initialize elasticsearch data source connection.");
         return new ElasticsearchClient(transport);
     }
 
@@ -36,7 +36,7 @@ public class ElasticsearchConfig {
      * Initialization checks whether the index exists. If it does not exist, it is created.
      */
     public void initCheck(ElasticsearchClient client, String indexName) {
-        log.info("OPERATE LOG Check whether the index[{}] exists.", indexName);
+        log.info("OPERATE-LOG Check whether the index[{}] exists.", indexName);
         try {
             ExistsRequest request = ExistsRequest.of(e -> e.index(indexName));
             BooleanResponse booleanResponse = client.indices().exists(request);

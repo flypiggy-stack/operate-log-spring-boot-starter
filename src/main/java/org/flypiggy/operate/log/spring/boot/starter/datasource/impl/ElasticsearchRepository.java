@@ -24,7 +24,7 @@ public class ElasticsearchRepository implements DatasourceApi {
         try {
             client.create(e -> e.index(index).document(logVo));
         } catch (IOException e) {
-            log.warn("OPERATE LOG Store elasticsearch document exception.");
+            log.warn("OPERATE-LOG Store elasticsearch document exception.");
         }
     }
 }
