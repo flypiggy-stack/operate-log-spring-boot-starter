@@ -1,16 +1,19 @@
-package org.flypiggy.operate.log.spring.boot.starter.model;
+package org.flypiggy.operate.log.spring.boot.starter.model.mongoDB;
 
 import lombok.Data;
-import org.flypiggy.operate.log.spring.boot.starter.utils.SnowflakeUtils;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 @Data
-public class Log {
+@Document(collection = "#{@collectionName}")
+public class MongoLog {
     /**
      * primary key
      */
-    private Long id = SnowflakeUtils.getId();
+    @Id
+    private Long id;
     /**
      * request source IP address
      */
@@ -54,10 +57,10 @@ public class Log {
     /**
      * create time
      */
-    private ZonedDateTime createTime = ZonedDateTime.now();
+    private Date createTime = new Date();
     /**
      * update time
      */
-    private ZonedDateTime updateTime = ZonedDateTime.now();
+    private Date updateTime = new Date();
 
 }

@@ -13,7 +13,7 @@ public class JdbcRepository implements DatasourceApi {
 
     @Override
     public void save(Log logVo) {
-        operateLogJdbcTemplate.update(insertSql, logVo.getIp(), logVo.getOperator(), logVo.getMethod(), logVo.getUri(), logVo.getClassInfo(),
+        operateLogJdbcTemplate.update(insertSql, logVo.getId(), logVo.getIp(), logVo.getOperator(), logVo.getMethod(), logVo.getUri(), logVo.getClassInfo(),
                 logVo.getMethodInfo(), logVo.getSuccess(), logVo.getRequestBody(), logVo.getResponseBody(), logVo.getErrorMessage());
     }
 }

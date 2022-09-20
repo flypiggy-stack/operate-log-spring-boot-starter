@@ -79,7 +79,7 @@ spring.operate-log.api-package-path：需要扫描的包及其下面所有包；
 spring.operate-log.class-info-value：'classInfo' 字段引用 '@Api' 注解中的值； 当 'tags' 时，仅采用第一个参数；默认TAGS <br>
 spring.operate-log.exclude.api：需要排除的，不要扫描的接口；以k-v形式；默认空，非必填项 <br>
 spring.operate-log.exclude.http-method：需要排除的，http请求方式；默认空，非必填项 <br>
-spring.operate-log.store-type：[jdbc\elasticsearch]两种存储方式，需要注意的是选择相应的存储方式需要引用相应的依赖，默认jdbc<br>
+spring.operate-log.store-type：[jdbc\elasticsearch]两种存储方式，需要注意的是选择相应的存储方式需要引用相应的依赖；默认空，必填项<br>
 
 以下配置只有选择elasticsearch才能生效 <br>
 spring.operate-log.elasticsearch.nodes：es集群；默认'localhost:9200'<br>

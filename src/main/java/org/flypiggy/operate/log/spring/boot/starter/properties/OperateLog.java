@@ -33,7 +33,7 @@ public class OperateLog {
     /**
      * Select a data source type to store operation logs.
      */
-    private DatasourceEnum storeType = DatasourceEnum.JDBC;
+    private DatasourceEnum storeType;
 
     /**
      * elasticsearch related configuration.
@@ -46,6 +46,12 @@ public class OperateLog {
      */
     @NestedConfigurationProperty
     private Jdbc jdbc = new Jdbc();
+
+    /**
+     * mongodb related configuration.
+     */
+    @NestedConfigurationProperty
+    private Mongodb mongodb = new Mongodb();
 
     /**
      * Whether to print the warning log during execution.

@@ -14,7 +14,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class JdbcConfig {
     private static final String createTableSql = "create table %s\n" +
             "(\n" +
-            "    id                bigint unsigned primary key auto_increment not null comment 'primary key',\n" +
+            "    id                bigint unsigned primary key                not null comment 'primary key',\n" +
             "    ip                varchar(128)                               not null comment 'ip address',\n" +
             "    operator          varchar(256)                               null comment 'operator',\n" +
             "    method            varchar(20)                                not null comment 'request method',\n" +
