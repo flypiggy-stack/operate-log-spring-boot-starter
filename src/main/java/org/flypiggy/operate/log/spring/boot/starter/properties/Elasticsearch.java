@@ -33,7 +33,7 @@ public class Elasticsearch {
          * elasticsearch index name.
          * This configuration takes effect only when an index of type 'FINAL_UNCHANGED' is selected.
          */
-        private String name = "operate_log";
+        private String name = "web_log";
         /**
          * This configuration takes effect only when an index of type 'DATE_SUFFIX' is selected.
          * The specific index name will be prefixed with the 'name' attribute and the date as the suffix.
