@@ -63,12 +63,7 @@ Operate-Log使用starter依赖，实现web接口日志输入到数据库；以�
         <groupId>jakarta.json</groupId>
         <artifactId>jakarta.json-api</artifactId>
         <version>2.0.1</version>
-    </dependency>
-    <dependency>
-        <groupId>io.github.flypiggy-stack</groupId>
-        <artifactId>operate-log-spring-boot-starter</artifactId>
-        <version>1.1.1</version>
-    </dependency>     
+    </dependency>  
    ```
 
 #### yaml配置属性解释
