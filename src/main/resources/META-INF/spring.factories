@@ -1,6 +1,6 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.flypiggy.operate.log.spring.boot.starter.configuration.EnableAdvisorConfiguration,\
-org.flypiggy.operate.log.spring.boot.starter.configuration.advisor.MongoAdvisorConfiguration,\
-org.flypiggy.operate.log.spring.boot.starter.configuration.advisor.ElasticsearchAdvisorConfiguration,\
-org.flypiggy.operate.log.spring.boot.starter.configuration.advisor.JdbcAdvisorConfiguration,\
-org.flypiggy.operate.log.spring.boot.starter.properties.OperateLog
+io.github.flypiggy.stack.operate.log.spring.boot.starter.configuration.EnableAdvisorConfiguration,\
+io.github.flypiggy.stack.operate.log.spring.boot.starter.configuration.advisor.MongoAdvisorConfiguration,\
+io.github.flypiggy.stack.operate.log.spring.boot.starter.configuration.advisor.ElasticsearchAdvisorConfiguration,\
+io.github.flypiggy.stack.operate.log.spring.boot.starter.configuration.advisor.JdbcAdvisorConfiguration,\
+io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.OperateLog
