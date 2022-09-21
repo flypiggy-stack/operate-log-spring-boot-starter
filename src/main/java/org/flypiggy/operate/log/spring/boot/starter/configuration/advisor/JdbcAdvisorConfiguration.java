@@ -1,27 +1,53 @@
-package org.flypiggy.operate.log.spring.boot.starter.configuration;
+package org.flypiggy.operate.log.spring.boot.starter.configuration.advisor;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.flypiggy.operate.log.spring.boot.starter.configuration.AdvisorBase;
+import org.flypiggy.operate.log.spring.boot.starter.configuration.EnableAdvisorConfiguration;
+import org.flypiggy.operate.log.spring.boot.starter.datasource.impl.JdbcRepository;
 import org.flypiggy.operate.log.spring.boot.starter.exception.OperateLogException;
 import org.flypiggy.operate.log.spring.boot.starter.properties.Jdbc;
+import org.flypiggy.operate.log.spring.boot.starter.properties.OperateLog;
 import org.flypiggy.operate.log.spring.boot.starter.utils.JdbcUrlUtils;
+import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 @Slf4j
-@AllArgsConstructor
-public class JdbcConfig {
+@Configuration
+@ConditionalOnBean(name = "enableJdbc")
+@AutoConfigureAfter(EnableAdvisorConfiguration.class)
+public class JdbcAdvisorConfiguration extends AdvisorBase {
+
     private final DataSourceProperties dataSourceProperties;
 
-    public JdbcTemplate getJdbcTemplate() throws OperateLogException {
+    public JdbcAdvisorConfiguration(OperateLog operateLog, DataSourceProperties dataSourceProperties) {
+        super(operateLog);
+        this.dataSourceProperties = dataSourceProperties;
+    }
+
+    @Bean
+    public AspectJExpressionPointcutAdvisor jdbcConfigurableAdvisor() {
+        JdbcTemplate jdbcTemplate = this.getJdbcTemplate();
+        Jdbc jdbc = operateLog.getJdbc();
+        String tableName = jdbc.getTableName();
+        this.initCheck(jdbcTemplate, jdbc);
+        String insertSql = String.format(jdbc.getInsertSql(), tableName);
+        return getPointcutAdvisor(new JdbcRepository(jdbcTemplate, insertSql));
+    }
+
+    private JdbcTemplate getJdbcTemplate() throws OperateLogException {
         DataSourceBuilder<?> dataSourceBuilder = dataSourceProperties.initializeDataSourceBuilder();
         log.info("OPERATE-LOG Create JDBC connection for operation log...");
         return new JdbcTemplate(dataSourceBuilder.build());
     }
 
-    public void initCheck(JdbcTemplate jdbcTemplate, Jdbc jdbc) throws OperateLogException {
+    private void initCheck(JdbcTemplate jdbcTemplate, Jdbc jdbc) throws OperateLogException {
         String tableName = jdbc.getTableName();
         log.info("OPERATE-LOG Initialization checks whether the database exists. Check whether the table exists.");
         try {
