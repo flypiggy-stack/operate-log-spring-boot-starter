@@ -32,12 +32,12 @@ public class ElasticsearchConfig {
             return new HttpHost(hostInfo[0], Integer.parseInt(hostInfo[1]));
         }).toArray(HttpHost[]::new);
         RestClientBuilder builder;
-        if (Objects.isNull(elasticsearch.getAccount()) || "".equals(elasticsearch.getAccount())) {
+        if (Objects.isNull(elasticsearch.getUsername()) || "".equals(elasticsearch.getUsername())) {
             builder = RestClient.builder(httpHosts);
         } else {
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             credentialsProvider.setCredentials(AuthScope.ANY,
-                    new UsernamePasswordCredentials(elasticsearch.getPassword(), elasticsearch.getPassword()));
+                    new UsernamePasswordCredentials(elasticsearch.getUsername(), elasticsearch.getPassword()));
             builder = RestClient.builder(httpHosts)
                     .setHttpClientConfigCallback(httpClientBuilder ->
                             httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider));

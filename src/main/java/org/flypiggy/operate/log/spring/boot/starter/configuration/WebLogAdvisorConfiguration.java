@@ -47,10 +47,10 @@ public class WebLogAdvisorConfiguration {
     public AspectJExpressionPointcutAdvisor jdbcConfigurableAdvisor(DataSourceProperties dataSourceProperties) {
         JdbcConfig jdbcConfig = new JdbcConfig(dataSourceProperties);
         JdbcTemplate jdbcTemplate = jdbcConfig.getJdbcTemplate();
-        String tableName = operateLog.getJdbc().getTableName();
-        jdbcConfig.initCheck(jdbcTemplate, tableName);
-        String insertSqlBase = "insert into %s (id, ip, operator, method, uri, class_info, method_info, success, request_body, response_body, error_message) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        String insertSql = String.format(insertSqlBase, tableName);
+        Jdbc jdbc = operateLog.getJdbc();
+        String tableName = jdbc.getTableName();
+        jdbcConfig.initCheck(jdbcTemplate, jdbc);
+        String insertSql = String.format(jdbc.getInsertSql(), tableName);
         return getPointcutAdvisor(new JdbcRepository(jdbcTemplate, insertSql));
     }
 

@@ -10,9 +10,9 @@ public class Elasticsearch {
      */
     private String[] nodes = new String[]{"localhost:9200"};
     /**
-     * elasticsearch account.
+     * elasticsearch username.
      */
-    private String account;
+    private String username;
     /**
      * elasticsearch password.
      */
