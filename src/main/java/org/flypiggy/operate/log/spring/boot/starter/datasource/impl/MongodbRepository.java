@@ -6,6 +6,8 @@ import org.bson.Document;
 import org.flypiggy.operate.log.spring.boot.starter.datasource.DatasourceApi;
 import org.flypiggy.operate.log.spring.boot.starter.model.Log;
 
+import java.util.Date;
+
 @AllArgsConstructor
 public class MongodbRepository implements DatasourceApi {
 
@@ -28,6 +30,8 @@ public class MongodbRepository implements DatasourceApi {
                 .append("success", log.getSuccess())
                 .append("requestBody", log.getRequestBody())
                 .append("responseBody", log.getResponseBody())
-                .append("errorMessage", log.getErrorMessage());
+                .append("errorMessage", log.getErrorMessage())
+                .append("createTime", new Date())
+                .append("updateTime", new Date());
     }
 }
