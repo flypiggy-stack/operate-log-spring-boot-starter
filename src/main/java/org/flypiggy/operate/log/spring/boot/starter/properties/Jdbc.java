@@ -33,7 +33,7 @@ public class Jdbc {
     /**
      * Check SQL for whether exists in the table.
      */
-    private String checkTableSql = "select count(1) from information_schema.tables where table_name = %s and table_schema = %s limit 1";
+    private String checkTableSql = "select count(1) from information_schema.tables where table_name = '%s' and table_schema = '%s' limit 1";
 
     /**
      * Check SQL for is there a database.
