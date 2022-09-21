@@ -254,7 +254,7 @@ public class WebLogAdvice implements MethodInterceptor {
             try {
                 Object result = invocation.proceed();
                 log.setSuccess(true);
-                log.setResponseBody(Objects.isNull(result) ? null : (result.toString().length() > 1024 ? result.toString().substring(0, 1024) : result.toString()));
+                log.setResponseBody(Objects.isNull(result) ? null : result.toString());
                 return result;
             } catch (Throwable throwable) {
                 StackTraceElement[] stackTraceElements = throwable.getStackTrace();
