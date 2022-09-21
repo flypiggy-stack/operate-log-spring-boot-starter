@@ -16,6 +16,7 @@ import org.flypiggy.operate.log.spring.boot.starter.model.Log;
 import org.flypiggy.operate.log.spring.boot.starter.properties.ClassInfoEnum;
 import org.flypiggy.operate.log.spring.boot.starter.properties.Exclude;
 import org.flypiggy.operate.log.spring.boot.starter.properties.OperateLog;
+import org.flypiggy.operate.log.spring.boot.starter.properties.PrintLogLevelEnum;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -26,6 +27,9 @@ import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.flypiggy.operate.log.spring.boot.starter.properties.PrintLogLevelEnum.ERROR;
+import static org.flypiggy.operate.log.spring.boot.starter.properties.PrintLogLevelEnum.WARNING;
 
 /**
  * Core logic code.
@@ -70,7 +74,7 @@ public class WebLogAdvice implements MethodInterceptor {
     /**
      * Whether to print the warning log during execution.
      */
-    private final boolean waningLog;
+    private final PrintLogLevelEnum printLogLevel;
 
     static {
         objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -79,7 +83,7 @@ public class WebLogAdvice implements MethodInterceptor {
 
     public WebLogAdvice(DatasourceApi datasourceApi, OperateLog operateLog) {
         this.datasourceApi = datasourceApi;
-        waningLog = operateLog.getWaningLog();
+        printLogLevel = operateLog.getPrintLogLevel();
         classInfoEnum = operateLog.getClassInfoValue();
         classInfoIsTags = operateLog.getClassInfoValue().equals(ClassInfoEnum.TAGS);
         checkExclude(operateLog);
@@ -233,7 +237,7 @@ public class WebLogAdvice implements MethodInterceptor {
     @Override
     public Object invoke(MethodInvocation invocation) {
         try {
-            if (waningLog && Objects.isNull(RequestContextHolder.getRequestAttributes())) {
+            if (WARNING.equals(printLogLevel) && Objects.isNull(RequestContextHolder.getRequestAttributes())) {
                 log.warn("OPERATE-LOG The method is not a web interface! " + "If you do not want to see this prompt, you need to reconfigurate 'spring.operate-log.api-package-path' to ensure that only web api methods are in these packages.");
             }
             HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
@@ -266,8 +270,10 @@ public class WebLogAdvice implements MethodInterceptor {
                 insert(log);
             }
         } catch (Throwable e) {
-            if (waningLog) {
+            if (WARNING.equals(printLogLevel)) {
                 log.warn("OPERATE-LOG Please report the error message, we will optimize the code after receiving it.");
+            } else if (ERROR.equals(printLogLevel)) {
+                log.error("OPERATE-LOG This exception will not affect your main program flow, but operation logging cannot be saved.", e);
             }
         }
         return null;

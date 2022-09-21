@@ -54,7 +54,7 @@ public class OperateLog {
     private Mongodb mongodb = new Mongodb();
 
     /**
-     * Whether to print the warning log during execution.
+     * The level of printing exception logs.
      */
-    private Boolean waningLog = false;
+    private PrintLogLevelEnum printLogLevel = PrintLogLevelEnum.NONE;
 }
