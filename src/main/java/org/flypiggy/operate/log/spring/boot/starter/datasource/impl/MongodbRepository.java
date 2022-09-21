@@ -1,34 +1,33 @@
 package org.flypiggy.operate.log.spring.boot.starter.datasource.impl;
 
+import com.mongodb.client.MongoCollection;
 import lombok.AllArgsConstructor;
+import org.bson.Document;
 import org.flypiggy.operate.log.spring.boot.starter.datasource.DatasourceApi;
 import org.flypiggy.operate.log.spring.boot.starter.model.Log;
-import org.flypiggy.operate.log.spring.boot.starter.model.mongoDB.MongoLog;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
 @AllArgsConstructor
 public class MongodbRepository implements DatasourceApi {
 
-    private final MongoTemplate mongoTemplate;
+    private final MongoCollection<Document> mongoCollection;
 
     @Override
     public void save(Log log) {
-        mongoTemplate.save(log2MongLog(log));
+        mongoCollection.insertOne(log2Document(log));
     }
 
-    private MongoLog log2MongLog(Log log) {
-        MongoLog mongoLog = new MongoLog();
-        mongoLog.setId(log.getId());
-        mongoLog.setIp(log.getIp());
-        mongoLog.setOperator(log.getOperator());
-        mongoLog.setMethod(log.getMethod());
-        mongoLog.setUri(log.getUri());
-        mongoLog.setClassInfo(log.getClassInfo());
-        mongoLog.setMethodInfo(log.getMethodInfo());
-        mongoLog.setSuccess(log.getSuccess());
-        mongoLog.setRequestBody(log.getRequestBody());
-        mongoLog.setResponseBody(log.getResponseBody());
-        mongoLog.setErrorMessage(log.getErrorMessage());
-        return mongoLog;
+    private Document log2Document(Log log) {
+        return new Document()
+                .append("id", log.getId())
+                .append("ip", log.getIp())
+                .append("operator", log.getOperator())
+                .append("method", log.getMethod())
+                .append("uri", log.getUri())
+                .append("classInfo", log.getClassInfo())
+                .append("methodInfo", log.getMethodInfo())
+                .append("success", log.getSuccess())
+                .append("requestBody", log.getRequestBody())
+                .append("responseBody", log.getResponseBody())
+                .append("errorMessage", log.getErrorMessage());
     }
 }

@@ -66,13 +66,7 @@ public class WebLogAdvisorConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "spring.operate-log", name = "store-type", havingValue = "mongodb")
     public AspectJExpressionPointcutAdvisor mongodbConfigurableAdvisor(MongoTemplate mongoTemplate) {
-        return getPointcutAdvisor(new MongodbRepository(mongoTemplate));
-    }
-
-    @Bean(name = "collectionName")
-    @ConditionalOnProperty(prefix = "spring.operate-log", name = "store-type", havingValue = "mongodb")
-    public String getCollectionName() {
-        return operateLog.getMongodb().getCollectionName();
+        return getPointcutAdvisor(new MongodbRepository(mongoTemplate.getCollection(operateLog.getMongodb().getCollectionName())));
     }
 
     public AspectJExpressionPointcutAdvisor getPointcutAdvisor(DatasourceApi datasourceApi) {
