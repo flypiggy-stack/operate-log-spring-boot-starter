@@ -15,7 +15,7 @@ public class Jdbc {
      */
     private String createTableSql = "create table %s\n" +
             "(\n" +
-            "    id                bigint unsigned primary key auto_increment not null comment 'primary key',\n" +
+            "    id                bigint unsigned primary key                not null comment 'primary key',\n" +
             "    ip                varchar(128)                               not null comment 'ip address',\n" +
             "    operator          varchar(256)                               null comment 'operator',\n" +
             "    method            varchar(20)                                not null comment 'request method',\n" +
@@ -43,7 +43,7 @@ public class Jdbc {
     /**
      * Add the SQL statement of the operation log.
      */
-    private String insertSql = "insert into %s (ip, operator, method, uri, class_info, method_info, success, request_body, response_body, error_message) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private String insertSql = "insert into %s (id, ip, operator, method, uri, class_info, method_info, success, request_body, response_body, error_message) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     public String getCreateTableSql() {
         return createTableSql.contains("%s") ? String.format(createTableSql, tableName) : createTableSql;
