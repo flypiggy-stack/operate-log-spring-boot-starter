@@ -13,6 +13,7 @@ import org.flypiggy.operate.log.spring.boot.starter.properties.Jdbc;
 import org.flypiggy.operate.log.spring.boot.starter.properties.OperateLog;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
@@ -44,6 +45,16 @@ public class WebLogAdvisorConfiguration {
 
     @Bean
     @ConditionalOnProperty(prefix = "spring.operate-log", name = "store-type", havingValue = "jdbc")
+    public void enableJdbc() {
+    }
+
+    @Bean
+    @ConditionalOnProperty(prefix = "spring.operate-log", name = "store-type", havingValue = "mongodb")
+    public void enableMongo() {
+    }
+
+    @Bean
+    @ConditionalOnBean(name = "enableJdbc")
     public AspectJExpressionPointcutAdvisor jdbcConfigurableAdvisor(DataSourceProperties dataSourceProperties) {
         JdbcConfig jdbcConfig = new JdbcConfig(dataSourceProperties);
         JdbcTemplate jdbcTemplate = jdbcConfig.getJdbcTemplate();
@@ -64,7 +75,7 @@ public class WebLogAdvisorConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "spring.operate-log", name = "store-type", havingValue = "mongodb")
+    @ConditionalOnBean(name = "enableMongo")
     public AspectJExpressionPointcutAdvisor mongodbConfigurableAdvisor(MongoTemplate mongoTemplate) {
         return getPointcutAdvisor(new MongodbRepository(mongoTemplate.getCollection(operateLog.getMongodb().getCollectionName())));
     }
