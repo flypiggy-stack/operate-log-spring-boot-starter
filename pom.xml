@@ -88,12 +88,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <scope>runtime</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
@@ -116,6 +110,7 @@
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-core</artifactId>
             <version>5.8.6</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
@@ -215,4 +210,12 @@
             </distributionManagement>
         </profile>
     </profiles>
+
+
+    <distributionManagement>
+        <repository>
+            <id>nexus</id>
+            <url>http://192.168.5.71:8082/repository/star-rock/</url>
+        </repository>
+    </distributionManagement>
 </project>
