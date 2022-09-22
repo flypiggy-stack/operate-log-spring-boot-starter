@@ -35,10 +35,8 @@ public class JdbcAdvisorConfiguration extends AdvisorBase {
     public AspectJExpressionPointcutAdvisor jdbcConfigurableAdvisor() {
         JdbcTemplate jdbcTemplate = this.getJdbcTemplate();
         Jdbc jdbc = operateLog.getJdbc();
-        String tableName = jdbc.getTableName();
         this.initCheck(jdbcTemplate, jdbc);
-        String insertSql = String.format(jdbc.getInsertSql(), tableName);
-        return getPointcutAdvisor(new JdbcRepository(jdbcTemplate, insertSql));
+        return getPointcutAdvisor(new JdbcRepository(jdbcTemplate, jdbc.getInsertSql()));
     }
 
     private JdbcTemplate getJdbcTemplate() throws OperateLogException {
@@ -67,6 +65,6 @@ public class JdbcAdvisorConfiguration extends AdvisorBase {
             return;
         }
         log.info("OPERATE-LOG The operation log table does not exist yet. We are about to create a new table! Table's name is {}.", tableName);
-        jdbcTemplate.update(String.format(jdbc.getCreateTableSql(), tableName));
+        jdbcTemplate.update(jdbc.getCreateTableSql());
     }
 }
