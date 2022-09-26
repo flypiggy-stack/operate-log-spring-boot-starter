@@ -2,17 +2,18 @@
 
 #### 介绍
 
-Operate-Log使用starter依赖，实现web接口日志输入到数据库；以低代码侵入为优势，只需简单配置yml文件即可插拔使用。
+Operate-Log使用starter依赖，实现web接口日志输出到多种存储对象；以低代码侵入为优势，只需简单配置yml文件即可插拔使用。
 
 #### 安装教程
 
 直接引用依赖
 
 ```xml
+
 <dependency>
-    <groupId>io.github.flypiggy-stack</groupId>
+   <groupId>io.github.flypiggy-stack</groupId>
    <artifactId>operate-log-spring-boot-starter</artifactId>
-   <version>1.2.0</version>
+   <version>1.2.1</version>
 </dependency>
 ```
 
@@ -21,20 +22,49 @@ Operate-Log使用starter依赖，实现web接口日志输入到数据库；以�
 
 #### 使用说明
 
-##### 一、最简启用
+##### 一、JDBC连接方式的数据库
 
-1. 配置yml
+1. 引入依赖
+   ```xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-jdbc</artifactId>
+   </dependency>
+   ```
+
+2. 配置yml
+   提示：jdbc连接信息使用spring-boot的配置
     ```yaml
     spring:
       operate-log:
-        enable: true
+        enable: true  #启用
+        store-type: jdbc  #jdbc连接方式
         api-package-path:
-          - com.xxx.xxx.xxx
+          - com.xxx.xxx.xxx #需要拦截的包
+        jdbc:
+          table-name: log_table #日志输出表名
     ```
 
-##### 二、ES启用
+##### 二、启用ES
 
-1. 配置yml
+1. 引入依赖
+   ```xml
+    <dependency>
+        <groupId>co.elastic.clients</groupId>
+        <artifactId>elasticsearch-java</artifactId>
+        <version>7.17.4</version>
+    </dependency>
+   ```
+   ```xml
+   <dependency>
+       <groupId>jakarta.json</groupId>
+       <artifactId>jakarta.json-api</artifactId>
+       <version>2.0.1</version>
+   </dependency>  
+   ```
+   **es的依赖版本需要与es实例兼容，避免未知异常出现**
+
+2. 配置yml
     ```yaml
     spring:
       operate-log:
@@ -43,56 +73,62 @@ Operate-Log使用starter依赖，实现web接口日志输入到数据库；以�
           - com.xxx.xxx.xxx
         store-type: elasticsearch
         elasticsearch:
-          nodes: ["ip:port","ip:port"] #es集群节点
-          account: (按需填写)
+          nodes: ["ip:port","ip:port"]  #es集群节点
+          username: (按需填写)
           password: (按需填写)
           index:
             name: web_log #索引名
             type: final_unchanged #有[final_unchanged\date_suffix]两种类型索引；final_unchanged是固定索引；date_suffix是索引名加上时间尾缀，具体时间尾缀由suffix类型确定
             suffix: year #有[year\month\day]类型选择，year为记录产生的年为尾缀，以此为例，索引为web_log_2022
     ```
-2. 可预见问题 <br>
-   es作为存储对象，需要以入es相关依赖
+
+##### 三、启用mongodb
+
+1. 引入依赖
    ```xml
     <dependency>
-        <groupId>co.elastic.clients</groupId>
-        <artifactId>elasticsearch-java</artifactId>
-        <version>7.17.4</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-mongodb</artifactId>
     </dependency>
-    <dependency>
-        <groupId>jakarta.json</groupId>
-        <artifactId>jakarta.json-api</artifactId>
-        <version>2.0.1</version>
-    </dependency>  
+   ```
+   ```xml
+   <dependency>
+       <groupId>jakarta.json</groupId>
+       <artifactId>jakarta.json-api</artifactId>
+       <version>2.0.1</version>
+   </dependency>  
    ```
 
-#### yaml配置属性解释
+2. 配置yml
+   提示：mongodb连接信息使用spring-boot的配置
+    ```yaml
+    spring:
+      operate-log:
+        enable: true
+        api-package-path:
+          - com.xxx.xxx.xxx
+        store-type: mongodb
+        mongodb:
+          collection-name: web_log #集合名
+    ```
 
-spring.operate-log.enable：启用，默认false <br>
-spring.operate-log.table-name：表名，用于存储操作日志的表；默认web_log <br>
-spring.operate-log.api-package-path：需要扫描的包及其下面所有包；默认空，必填项 <br>
-spring.operate-log.class-info-value：'classInfo' 字段引用 '@Api' 注解中的值； 当 'tags' 时，仅采用第一个参数；默认TAGS <br>
-spring.operate-log.exclude.api：需要排除的，不要扫描的接口；以k-v形式；默认空，非必填项 <br>
-spring.operate-log.exclude.http-method：需要排除的，http请求方式；默认空，非必填项 <br>
-spring.operate-log.store-type：[jdbc\elasticsearch]两种存储方式，需要注意的是选择相应的存储方式需要引用相应的依赖；默认空，必填项<br>
+#### yaml其他配置说明
 
-以下配置只有选择elasticsearch才能生效 <br>
-spring.operate-log.elasticsearch.nodes：es集群；默认'localhost:9200'<br>
-spring.operate-log.elasticsearch.account：es账号；默认空，非必填项 <br>
-spring.operate-log.elasticsearch.password：es密码；默认空，非必填项 <br>
-spring.operate-log.elasticsearch.index.name：索引名；默认web_log <br>
-spring.operate-log.elasticsearch.index.type：[final_unchanged\date_suffix]
-两种类型索引；final_unchanged是固定索引；date_suffix是索引名加上时间尾缀，具体时间尾缀由suffix类型确定；默认final_unchanged <br>
-spring.operate-log.elasticsearch.index.suffix：[year\month\day]
-类型选择，year为记录产生的年为尾缀，以此为例，索引为web_log_2022；默认year，只有当选择date_suffix此配置才生效 <br>
+```yaml
+spring:
+   operate-log:
+      class-info-value: tags #'classInfo' 字段引用 '@Api' 注解中的值； 当 'tags' 时，仅采用第一个参数；默认TAGS
+      exclude: #排除拦截的配置
+         api:
+            put:
+               - /xx/xx/xx #put请求方式的，此接口不需要拦截；支持*匹配
+         http-method: delete,head,post #delete\head\post请求方式不需要拦截，数组形式
+```
 
-以下配置只有选择jdbc才能生效 <br>
-spring.operate-log.jdbc.tableName：表名，用于存储操作日志的表；默认web_log <br>
-<br>
-**操作人**
+#### 操作人
+
 可直接使用LogOperatorContext.set("操作人信息");
 
 #### 未来新增特性
 
-1. 增加mongoDB作为存储对象
-2. 增加注解，直接使用注解来拦截接口
+1. 增加注解，直接使用注解来拦截接口
