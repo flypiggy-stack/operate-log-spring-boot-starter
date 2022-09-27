@@ -17,11 +17,13 @@ import java.util.Objects;
 @Configuration
 @ConditionalOnProperty(prefix = "spring.operate-log", name = "enable", havingValue = "true")
 @AutoConfigureAfter(OperateLog.class)
-public class EnableAdvisorConfiguration extends AdvisorBase {
+public class EnableAdvisorConfiguration {
+
+    private final OperateLog operateLog;
 
     public EnableAdvisorConfiguration(OperateLog operateLog) {
-        super(operateLog);
-        this.checkProperties();
+        this.operateLog = operateLog;
+        checkProperties();
     }
 
     @Bean
