@@ -62,7 +62,7 @@ Operate-Log使用starter依赖，实现web接口日志输出到多种存储对�
        <version>2.0.1</version>
    </dependency>  
    ```
-   **es的依赖版本需要与es实例兼容，避免未知异常出现**
+   **es的依赖版本需要与es实例兼容，避免未知异常出现；目前支持的es版本7.15及以上**
 
 2. 配置yml
     ```yaml
