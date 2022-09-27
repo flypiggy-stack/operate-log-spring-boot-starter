@@ -9,7 +9,6 @@ import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.EsInd
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.util.UUID;
 
 @Slf4j
 public class ElasticsearchRepository implements DatasourceApi {
@@ -35,7 +34,7 @@ public class ElasticsearchRepository implements DatasourceApi {
         }
         try {
             String finalIndex = index;
-            client.create(e -> e.index(finalIndex).id(UUID.randomUUID().toString()).document(logVo));
+            client.create(e -> e.index(finalIndex).id(logVo.getId().toString()).document(logVo));
         } catch (IOException e) {
             log.warn("OPERATE-LOG Store elasticsearch document exception.");
         }
