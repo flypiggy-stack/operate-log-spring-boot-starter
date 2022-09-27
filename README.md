@@ -91,13 +91,6 @@ Operate-Log使用starter依赖，实现web接口日志输出到多种存储对�
         <artifactId>spring-boot-starter-data-mongodb</artifactId>
     </dependency>
    ```
-   ```xml
-   <dependency>
-       <groupId>jakarta.json</groupId>
-       <artifactId>jakarta.json-api</artifactId>
-       <version>2.0.1</version>
-   </dependency>  
-   ```
 
 2. 配置yml
    提示：mongodb连接信息使用spring-boot的配置
