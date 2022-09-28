@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AdvisorBase {
     protected static final String expressionBase = "within(%s..*)";
+    protected static final String annotationBase = "(%s || @annotation(io.github.flypiggy.stack.operate.log.spring.boot.starter.annotation.Log)) && !@annotation(io.github.flypiggy.stack.operate.log.spring.boot.starter.annotation.UnLog)";
     protected final OperateLog operateLog;
 
     public AdvisorBase(OperateLog operateLog) {
@@ -24,7 +25,8 @@ public class AdvisorBase {
     public AspectJExpressionPointcutAdvisor getPointcutAdvisor(DatasourceApi datasourceApi) {
         AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
         advisor.setAdvice(new WebLogAdvice(datasourceApi, operateLog));
-        String expression = getExpression();
+        String expressionClass = getExpression();
+        String expression = String.format(annotationBase, expressionClass);
         log.info("OPERATE-LOG Scan package expression:{}", expression);
         advisor.setExpression(expression);
         return advisor;
