@@ -6,6 +6,10 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty;
 @Data
 public class Elasticsearch {
     /**
+     * protocol
+     */
+    private TransportProtocolEnum schema = TransportProtocolEnum.HTTP;
+    /**
      * elasticsearch host array.
      */
     private String[] nodes = new String[]{"localhost:9200"};
@@ -17,6 +21,26 @@ public class Elasticsearch {
      * elasticsearch password.
      */
     private String password;
+    /**
+     * Connection timeout.
+     */
+    private int connectTimeout = 10000;
+    /**
+     * Socket connection timeout.
+     */
+    private int socketTimeout = 15000;
+    /**
+     * Gets the timeout of the connection
+     */
+    private int connectionRequestTimeout = 20000;
+    /**
+     * Maximum number of connections.
+     */
+    private int maxConnectNum = 100;
+    /**
+     * Maximum number of routing connections.
+     */
+    private int maxConnectPerRoute = 100;
     /**
      * elasticsearch index.
      */

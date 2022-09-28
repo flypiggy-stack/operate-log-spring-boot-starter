@@ -50,18 +50,30 @@ public class ElasticsearchAdvisorConfiguration extends AdvisorBase {
     private ElasticsearchClient getElasticsearchClient(Elasticsearch elasticsearch) {
         HttpHost[] httpHosts = Arrays.stream(elasticsearch.getNodes()).map(x -> {
             String[] hostInfo = x.split(":");
-            return new HttpHost(hostInfo[0], Integer.parseInt(hostInfo[1]));
+            return new HttpHost(hostInfo[0], Integer.parseInt(hostInfo[1]), elasticsearch.getSchema().toString().toLowerCase());
         }).toArray(HttpHost[]::new);
-        RestClientBuilder builder;
+        RestClientBuilder builder = RestClient.builder(httpHosts).setRequestConfigCallback(requestConfigBuilder -> {
+            requestConfigBuilder.setConnectTimeout(elasticsearch.getConnectTimeout());
+            requestConfigBuilder.setSocketTimeout(elasticsearch.getSocketTimeout());
+            requestConfigBuilder.setConnectionRequestTimeout(elasticsearch.getConnectionRequestTimeout());
+            return requestConfigBuilder;
+        });
         if (Objects.isNull(elasticsearch.getUsername()) || "".equals(elasticsearch.getUsername())) {
-            builder = RestClient.builder(httpHosts);
+            builder.setHttpClientConfigCallback(httpClientBuilder -> {
+                httpClientBuilder.setMaxConnTotal(elasticsearch.getMaxConnectNum());
+                httpClientBuilder.setMaxConnPerRoute(elasticsearch.getMaxConnectPerRoute());
+                return httpClientBuilder;
+            });
         } else {
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             credentialsProvider.setCredentials(AuthScope.ANY,
                     new UsernamePasswordCredentials(elasticsearch.getUsername(), elasticsearch.getPassword()));
-            builder = RestClient.builder(httpHosts)
-                    .setHttpClientConfigCallback(httpClientBuilder ->
-                            httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider));
+            builder.setHttpClientConfigCallback(httpClientBuilder -> {
+                httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                httpClientBuilder.setMaxConnTotal(elasticsearch.getMaxConnectNum());
+                httpClientBuilder.setMaxConnPerRoute(elasticsearch.getMaxConnectPerRoute());
+                return httpClientBuilder;
+            });
         }
         RestClient restClient = builder.build();
         ObjectMapper objectMapper = new ObjectMapper();
