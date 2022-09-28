@@ -26,6 +26,7 @@ public class Jdbc {
             "    request_body      text                                       null comment 'requestor',\n" +
             "    response_body     text                                       null comment 'responder',\n" +
             "    error_message     text                                       null comment 'error message',\n" +
+            "    time_taken        bigint                                     null comment 'time taken,unit ms',\n" +
             "    create_time       datetime  default CURRENT_TIMESTAMP        not null comment 'create time',\n" +
             "    update_time       datetime  default CURRENT_TIMESTAMP        not null on update CURRENT_TIMESTAMP comment 'update time'\n" +
             ")";
@@ -43,7 +44,7 @@ public class Jdbc {
     /**
      * Add the SQL statement of the operation log.
      */
-    private String insertSql = "insert into %s (id, ip, operator, method, uri, class_info, method_info, success, request_body, response_body, error_message) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private String insertSql = "insert into %s (id, ip, operator, method, uri, class_info, method_info, success, request_body, response_body, error_message, time_taken) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     public String getCreateTableSql() {
         return createTableSql.contains("%s") ? String.format(createTableSql, tableName) : createTableSql;

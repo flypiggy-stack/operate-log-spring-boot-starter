@@ -52,6 +52,10 @@ public class Log {
      */
     private String errorMessage;
     /**
+     * time taken, unit ms
+     */
+    private Long timeTaken;
+    /**
      * create time
      */
     private ZonedDateTime createTime = ZonedDateTime.now();

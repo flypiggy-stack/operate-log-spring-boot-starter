@@ -236,25 +236,27 @@ public class WebLogAdvice implements MethodInterceptor {
      */
     @Override
     public Object invoke(MethodInvocation invocation) {
+        long startTime = System.currentTimeMillis();
+        if (WARNING.equals(printLogLevel) && Objects.isNull(RequestContextHolder.getRequestAttributes())) {
+            log.warn("OPERATE-LOG The method is not a web interface! " + "If you do not want to see this prompt, you need to reconfigurate 'spring.operate-log.api-package-path' to ensure that only web api methods are in these packages.");
+        }
+        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
+        if (log.isDebugEnabled()) {
+            log.debug("------------------------------------------------------------------------------");
+            log.debug("Request source: {}", getIp(request));
+            log.debug("Operator:       {}", getOperator());
+            log.debug("Request method: {}", request.getMethod());
+            log.debug("Api uri:        {}", request.getRequestURI());
+            log.debug("Request now:    {}", LocalDateTime.now());
+            log.debug("------------------------------------------------------------------------------");
+        }
         try {
-            if (WARNING.equals(printLogLevel) && Objects.isNull(RequestContextHolder.getRequestAttributes())) {
-                log.warn("OPERATE-LOG The method is not a web interface! " + "If you do not want to see this prompt, you need to reconfigurate 'spring.operate-log.api-package-path' to ensure that only web api methods are in these packages.");
-            }
-            HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
-            if (log.isDebugEnabled()) {
-                log.debug("------------------------------------------------------------------------------");
-                log.debug("Request source: {}", getIp(request));
-                log.debug("Operator:       {}", getOperator());
-                log.debug("Request method: {}", request.getMethod());
-                log.debug("Api uri:        {}", request.getRequestURI());
-                log.debug("Request now:    {}", LocalDateTime.now());
-                log.debug("------------------------------------------------------------------------------");
-            }
             if (isExcludeApi(request.getRequestURI(), request.getMethod())) {
                 log.debug("Api exclude. Request method: {}, URI: {}", request.getRequestURI(), request.getMethod());
                 return invocation.proceed();
             }
             Log log = getBaseLogObj(invocation, request);
+            log.setTimeTaken(System.currentTimeMillis() - startTime);
             try {
                 Object result = invocation.proceed();
                 log.setSuccess(true);
