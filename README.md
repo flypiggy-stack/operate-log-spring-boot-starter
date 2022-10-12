@@ -9,11 +9,10 @@ Operate-Log使用starter依赖，实现web接口日志输出到多种存储对�
 直接引用依赖
 
 ```xml
-
 <dependency>
    <groupId>io.github.flypiggy-stack</groupId>
    <artifactId>operate-log-spring-boot-starter</artifactId>
-   <version>1.2.1</version>
+   <version>1.2.2</version>
 </dependency>
 ```
 
@@ -116,6 +115,7 @@ spring:
             put:
                - /xx/xx/xx #put请求方式的，此接口不需要拦截；支持*匹配
          http-method: delete,head,post #delete\head\post请求方式不需要拦截，数组形式
+      thrown-exception-name: ['NullPointerException'] #为空时，抛出所有异常；若指定异常，则只抛出指定的异常
 ```
 
 #### 操作人
@@ -124,4 +124,4 @@ spring:
 
 #### 未来新增特性
 
-1. 增加注解，直接使用注解来拦截接口
+1. 增加对swagger的弱依赖
