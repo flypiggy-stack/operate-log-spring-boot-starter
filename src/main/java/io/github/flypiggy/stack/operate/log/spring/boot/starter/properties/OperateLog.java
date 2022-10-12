@@ -52,7 +52,8 @@ public class OperateLog {
     private Mongodb mongodb = new Mongodb();
 
     /**
-     * The level of printing exception logs.
+     * You need to specify the exception thrown. If it is empty, all exceptions are thrown.
+     * e.g. You need throw NullPointerException, configure NullPointerException.
      */
-    private PrintLogLevelEnum printLogLevel = PrintLogLevelEnum.NONE;
+    private String[] thrownExceptionName;
 }

@@ -13,7 +13,6 @@ import io.github.flypiggy.stack.operate.log.spring.boot.starter.model.Log;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.ClassInfoEnum;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.Exclude;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.OperateLog;
-import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.PrintLogLevelEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -27,9 +26,6 @@ import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.PrintLogLevelEnum.ERROR;
-import static io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.PrintLogLevelEnum.WARNING;
 
 /**
  * Core logic code.
@@ -47,6 +43,10 @@ public class WebLogAdvice implements MethodInterceptor {
      * Exclude a type of request method interface.
      */
     private static Set<String> excludeHttpMethods = new HashSet<>();
+    /**
+     * Need to specify the exception thrown.
+     */
+    private final Set<String> thrownExceptionNameSet;
     /**
      * datasource: Inject the corresponding storage data source according to the configuration.
      */
@@ -72,9 +72,9 @@ public class WebLogAdvice implements MethodInterceptor {
      */
     private boolean excludeApiIsnull = true;
     /**
-     * Whether to print the warning log during execution.
+     * Whether to be null of 'spring.operate-log.thrown-exception-name'
      */
-    private final PrintLogLevelEnum printLogLevel;
+    private final boolean thrownExceptionNameIsNull;
 
     static {
         objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
@@ -83,10 +83,14 @@ public class WebLogAdvice implements MethodInterceptor {
 
     public WebLogAdvice(DatasourceApi datasourceApi, OperateLog operateLog) {
         this.datasourceApi = datasourceApi;
-        printLogLevel = operateLog.getPrintLogLevel();
-        classInfoEnum = operateLog.getClassInfoValue();
-        classInfoIsTags = operateLog.getClassInfoValue().equals(ClassInfoEnum.TAGS);
+        this.classInfoEnum = operateLog.getClassInfoValue();
+        this.classInfoIsTags = operateLog.getClassInfoValue().equals(ClassInfoEnum.TAGS);
         checkExclude(operateLog);
+        String[] thrownExceptionNameArr = operateLog.getThrownExceptionName();
+        thrownExceptionNameSet = thrownExceptionNameArr == null
+                ? Collections.emptySet()
+                : Arrays.stream(thrownExceptionNameArr).collect(Collectors.toSet());
+        this.thrownExceptionNameIsNull = thrownExceptionNameSet.isEmpty();
     }
 
     /**
@@ -235,9 +239,9 @@ public class WebLogAdvice implements MethodInterceptor {
      * Core code logic method.
      */
     @Override
-    public Object invoke(MethodInvocation invocation) {
+    public Object invoke(MethodInvocation invocation) throws Throwable {
         long startTime = System.currentTimeMillis();
-        if (WARNING.equals(printLogLevel) && Objects.isNull(RequestContextHolder.getRequestAttributes())) {
+        if (Objects.isNull(RequestContextHolder.getRequestAttributes())) {
             log.warn("OPERATE-LOG The method is not a web interface! " + "If you do not want to see this prompt, you need to reconfigurate 'spring.operate-log.api-package-path' to ensure that only web api methods are in these packages.");
         }
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
@@ -250,33 +254,28 @@ public class WebLogAdvice implements MethodInterceptor {
             log.debug("Request now:    {}", LocalDateTime.now());
             log.debug("------------------------------------------------------------------------------");
         }
+        if (isExcludeApi(request.getRequestURI(), request.getMethod())) {
+            log.debug("Api exclude. Request method: {}, URI: {}", request.getRequestURI(), request.getMethod());
+            return invocation.proceed();
+        }
+        Log log = getBaseLogObj(invocation, request);
+        log.setTimeTaken(System.currentTimeMillis() - startTime);
         try {
-            if (isExcludeApi(request.getRequestURI(), request.getMethod())) {
-                log.debug("Api exclude. Request method: {}, URI: {}", request.getRequestURI(), request.getMethod());
-                return invocation.proceed();
+            Object result = invocation.proceed();
+            log.setSuccess(true);
+            log.setResponseBody(Objects.isNull(result) ? null : result.toString());
+            return result;
+        } catch (Throwable throwable) {
+            StackTraceElement[] stackTraceElements = throwable.getStackTrace();
+            StackTraceElement traceElement = stackTraceElements[0];
+            String errorMessage = String.format("%s\n%s", traceElement, throwable);
+            log.setSuccess(false);
+            log.setErrorMessage(errorMessage);
+            if (thrownExceptionNameIsNull || thrownExceptionNameSet.contains(throwable.getClass().getSimpleName())) {
+                throw throwable;
             }
-            Log log = getBaseLogObj(invocation, request);
-            log.setTimeTaken(System.currentTimeMillis() - startTime);
-            try {
-                Object result = invocation.proceed();
-                log.setSuccess(true);
-                log.setResponseBody(Objects.isNull(result) ? null : result.toString());
-                return result;
-            } catch (Throwable throwable) {
-                StackTraceElement[] stackTraceElements = throwable.getStackTrace();
-                StackTraceElement traceElement = stackTraceElements[0];
-                String errorMessage = String.format("%s\n%s", traceElement, throwable);
-                log.setSuccess(false);
-                log.setErrorMessage(errorMessage);
-            } finally {
-                insert(log);
-            }
-        } catch (Throwable e) {
-            if (WARNING.equals(printLogLevel)) {
-                log.warn("OPERATE-LOG Please report the error message, we will optimize the code after receiving it.");
-            } else if (ERROR.equals(printLogLevel)) {
-                log.error("OPERATE-LOG This exception will not affect your main program flow, but operation logging cannot be saved.", e);
-            }
+        } finally {
+            insert(log);
         }
         return null;
     }
@@ -286,7 +285,7 @@ public class WebLogAdvice implements MethodInterceptor {
      *
      * @param uri    uri
      * @param method http method
-     * @return {@link Boolean} true need exclude; false don't need exclude.
+     * @return {@link java.lang.Boolean} true need exclude; false don't need exclude.
      */
     private Boolean isExcludeApi(String uri, String method) {
         if (excludeIsNull) return false;

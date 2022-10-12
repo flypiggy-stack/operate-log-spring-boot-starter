@@ -6,7 +6,7 @@ import io.github.flypiggy.stack.operate.log.spring.boot.starter.model.Log;
 import lombok.AllArgsConstructor;
 import org.bson.Document;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @AllArgsConstructor
 public class MongodbRepository implements DatasourceApi {
@@ -31,7 +31,8 @@ public class MongodbRepository implements DatasourceApi {
                 .append("requestBody", log.getRequestBody())
                 .append("responseBody", log.getResponseBody())
                 .append("errorMessage", log.getErrorMessage())
-                .append("createTime", new Date())
-                .append("updateTime", new Date());
+                .append("timeTaken", log.getTimeTaken())
+                .append("createTime", ZonedDateTime.now().toString())
+                .append("updateTime", ZonedDateTime.now().toString());
     }
 }

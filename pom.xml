@@ -10,7 +10,7 @@
     </parent>
     <groupId>io.github.flypiggy-stack</groupId>
     <artifactId>operate-log-spring-boot-starter</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
     <name>operate-log-spring-boot-starter</name>
     <description>operate-log-spring-boot-starter</description>
     <licenses>
@@ -206,11 +206,4 @@
             </distributionManagement>
         </profile>
     </profiles>
-
-    <distributionManagement>
-        <repository>
-            <id>nexus</id>
-            <url>http://192.168.5.71:8082/repository/star-rock/</url>
-        </repository>
-    </distributionManagement>
 </project>
