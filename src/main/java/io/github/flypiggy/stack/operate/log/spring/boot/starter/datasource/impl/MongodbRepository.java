@@ -3,15 +3,17 @@ package io.github.flypiggy.stack.operate.log.spring.boot.starter.datasource.impl
 import com.mongodb.client.MongoCollection;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.datasource.DatasourceApi;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.model.Log;
-import lombok.AllArgsConstructor;
 import org.bson.Document;
 
 import java.time.ZonedDateTime;
 
-@AllArgsConstructor
 public class MongodbRepository implements DatasourceApi {
 
     private final MongoCollection<Document> mongoCollection;
+
+    public MongodbRepository(MongoCollection<Document> mongoCollection) {
+        this.mongoCollection = mongoCollection;
+    }
 
     @Override
     public void save(Log log) {

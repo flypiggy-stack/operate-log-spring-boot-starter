@@ -1,11 +1,9 @@
 package io.github.flypiggy.stack.operate.log.spring.boot.starter.model;
 
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.utils.SnowflakeUtils;
-import lombok.Data;
 
 import java.time.ZonedDateTime;
 
-@Data
 public class Log {
     /**
      * primary key
@@ -64,4 +62,115 @@ public class Log {
      */
     private ZonedDateTime updateTime = ZonedDateTime.now();
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getOperator() {
+        return operator;
+    }
+
+    public void setOperator(String operator) {
+        this.operator = operator;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    public String getClassInfo() {
+        return classInfo;
+    }
+
+    public void setClassInfo(String classInfo) {
+        this.classInfo = classInfo;
+    }
+
+    public String getMethodInfo() {
+        return methodInfo;
+    }
+
+    public void setMethodInfo(String methodInfo) {
+        this.methodInfo = methodInfo;
+    }
+
+    public Boolean getSuccess() {
+        return success;
+    }
+
+    public void setSuccess(Boolean success) {
+        this.success = success;
+    }
+
+    public String getRequestBody() {
+        return requestBody;
+    }
+
+    public void setRequestBody(String requestBody) {
+        this.requestBody = requestBody;
+    }
+
+    public String getResponseBody() {
+        return responseBody;
+    }
+
+    public void setResponseBody(String responseBody) {
+        this.responseBody = responseBody;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
+    }
+
+    public Long getTimeTaken() {
+        return timeTaken;
+    }
+
+    public void setTimeTaken(Long timeTaken) {
+        this.timeTaken = timeTaken;
+    }
+
+    public ZonedDateTime getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(ZonedDateTime createTime) {
+        this.createTime = createTime;
+    }
+
+    public ZonedDateTime getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(ZonedDateTime updateTime) {
+        this.updateTime = updateTime;
+    }
 }

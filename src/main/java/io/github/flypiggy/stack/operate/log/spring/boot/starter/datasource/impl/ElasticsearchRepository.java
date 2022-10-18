@@ -6,12 +6,14 @@ import io.github.flypiggy.stack.operate.log.spring.boot.starter.model.Log;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.DateSuffixEnum;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.Elasticsearch;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.EsIndexTypeEnum;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-@Slf4j
 public class ElasticsearchRepository implements DatasourceApi {
+
+    private final Logger log = LoggerFactory.getLogger(ElasticsearchRepository.class);
 
     private final ElasticsearchClient client;
     private final DateSuffixEnum dateSuffixEnum;

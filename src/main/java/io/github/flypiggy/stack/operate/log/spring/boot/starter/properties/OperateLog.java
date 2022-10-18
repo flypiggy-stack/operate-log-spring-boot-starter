@@ -1,11 +1,9 @@
 package io.github.flypiggy.stack.operate.log.spring.boot.starter.properties;
 
-import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.context.annotation.Configuration;
 
-@Data
 @Configuration
 @ConfigurationProperties("spring.operate-log")
 public class OperateLog {
@@ -68,4 +66,92 @@ public class OperateLog {
      * Whether to use the swagger annotation is not turned on by default.
      */
     private Boolean useSwaggerAnnotation = false;
+
+    public Boolean getEnable() {
+        return enable;
+    }
+
+    public void setEnable(Boolean enable) {
+        this.enable = enable;
+    }
+
+    public ClassInfoEnum getClassInfoValue() {
+        return classInfoValue;
+    }
+
+    public void setClassInfoValue(ClassInfoEnum classInfoValue) {
+        this.classInfoValue = classInfoValue;
+    }
+
+    public Exclude getExclude() {
+        return exclude;
+    }
+
+    public void setExclude(Exclude exclude) {
+        this.exclude = exclude;
+    }
+
+    public String[] getApiPackagePath() {
+        return apiPackagePath;
+    }
+
+    public void setApiPackagePath(String[] apiPackagePath) {
+        this.apiPackagePath = apiPackagePath;
+    }
+
+    public DatasourceEnum getStoreType() {
+        return storeType;
+    }
+
+    public void setStoreType(DatasourceEnum storeType) {
+        this.storeType = storeType;
+    }
+
+    public Elasticsearch getElasticsearch() {
+        return elasticsearch;
+    }
+
+    public void setElasticsearch(Elasticsearch elasticsearch) {
+        this.elasticsearch = elasticsearch;
+    }
+
+    public Jdbc getJdbc() {
+        return jdbc;
+    }
+
+    public void setJdbc(Jdbc jdbc) {
+        this.jdbc = jdbc;
+    }
+
+    public Mongodb getMongodb() {
+        return mongodb;
+    }
+
+    public void setMongodb(Mongodb mongodb) {
+        this.mongodb = mongodb;
+    }
+
+    public PrintLogLevelEnum getPrintLogLevel() {
+        return printLogLevel;
+    }
+
+    public void setPrintLogLevel(PrintLogLevelEnum printLogLevel) {
+        this.printLogLevel = printLogLevel;
+    }
+
+    public String[] getThrownExceptionName() {
+        return thrownExceptionName;
+    }
+
+    public void setThrownExceptionName(String[] thrownExceptionName) {
+        this.thrownExceptionName = thrownExceptionName;
+    }
+
+    public Boolean getUseSwaggerAnnotation() {
+        return useSwaggerAnnotation;
+    }
+
+    public void setUseSwaggerAnnotation(Boolean useSwaggerAnnotation) {
+        this.useSwaggerAnnotation = useSwaggerAnnotation;
+    }
 }

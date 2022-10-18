@@ -15,9 +15,10 @@ import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.Opera
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.PrintLogLevelEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -35,8 +36,8 @@ import static io.github.flypiggy.stack.operate.log.spring.boot.starter.propertie
 /**
  * Core logic code.
  */
-@Slf4j
 public class WebLogAdvice implements MethodInterceptor {
+    private final Logger log = LoggerFactory.getLogger(WebLogAdvice.class);
     private static final ObjectMapper objectMapper;
     private static final JavaType JAVA_TYPE;
 

@@ -5,7 +5,8 @@ import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.Datas
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.Elasticsearch;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.Jdbc;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.OperateLog;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -13,11 +14,12 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Objects;
 
-@Slf4j
 @Configuration
 @ConditionalOnProperty(prefix = "spring.operate-log", name = "enable", havingValue = "true")
 @AutoConfigureAfter(OperateLog.class)
 public class EnableAdvisorConfiguration {
+
+    private final Logger log = LoggerFactory.getLogger(EnableAdvisorConfiguration.class);
 
     private final OperateLog operateLog;
 

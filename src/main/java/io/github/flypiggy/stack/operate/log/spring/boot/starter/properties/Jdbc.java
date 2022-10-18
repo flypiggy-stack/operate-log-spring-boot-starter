@@ -1,8 +1,5 @@
 package io.github.flypiggy.stack.operate.log.spring.boot.starter.properties;
 
-import lombok.Data;
-
-@Data
 public class Jdbc {
 
     /**
@@ -54,4 +51,35 @@ public class Jdbc {
         return insertSql.contains("%s") ? String.format(insertSql, tableName) : insertSql;
     }
 
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public void setCreateTableSql(String createTableSql) {
+        this.createTableSql = createTableSql;
+    }
+
+    public String getCheckTableSql() {
+        return checkTableSql;
+    }
+
+    public void setCheckTableSql(String checkTableSql) {
+        this.checkTableSql = checkTableSql;
+    }
+
+    public String getCheckDatabaseSql() {
+        return checkDatabaseSql;
+    }
+
+    public void setCheckDatabaseSql(String checkDatabaseSql) {
+        this.checkDatabaseSql = checkDatabaseSql;
+    }
+
+    public void setInsertSql(String insertSql) {
+        this.insertSql = insertSql;
+    }
 }

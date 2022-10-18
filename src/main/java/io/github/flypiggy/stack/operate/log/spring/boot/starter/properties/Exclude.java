@@ -1,12 +1,10 @@
 package io.github.flypiggy.stack.operate.log.spring.boot.starter.properties;
 
-import lombok.Data;
 import org.springframework.http.HttpMethod;
 
 import java.util.Map;
 
 
-@Data
 public class Exclude {
 
     /**
@@ -19,4 +17,20 @@ public class Exclude {
      * Request method.
      */
     private HttpMethod[] httpMethod;
+
+    public Map<HttpMethod, String[]> getApi() {
+        return api;
+    }
+
+    public void setApi(Map<HttpMethod, String[]> api) {
+        this.api = api;
+    }
+
+    public HttpMethod[] getHttpMethod() {
+        return httpMethod;
+    }
+
+    public void setHttpMethod(HttpMethod[] httpMethod) {
+        this.httpMethod = httpMethod;
+    }
 }

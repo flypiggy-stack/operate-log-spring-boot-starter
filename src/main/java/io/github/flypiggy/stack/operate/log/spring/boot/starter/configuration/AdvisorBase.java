@@ -4,7 +4,8 @@ import io.github.flypiggy.stack.operate.log.spring.boot.starter.advice.WebLogAdv
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.datasource.DatasourceApi;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.exception.OperateLogException;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.OperateLog;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
 
 import java.util.Arrays;
@@ -12,8 +13,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4j
 public class AdvisorBase {
+    private final Logger log = LoggerFactory.getLogger(AdvisorBase.class);
+
     protected static final String expressionBase = "within(%s..*)";
     protected static final String annotationBase = "(%s || @annotation(io.github.flypiggy.stack.operate.log.spring.boot.starter.annotation.Log)) && !@annotation(io.github.flypiggy.stack.operate.log.spring.boot.starter.annotation.UnLog)";
     protected final OperateLog operateLog;

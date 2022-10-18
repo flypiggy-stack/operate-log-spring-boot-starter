@@ -13,7 +13,6 @@ import io.github.flypiggy.stack.operate.log.spring.boot.starter.configuration.En
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.datasource.impl.ElasticsearchRepository;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.Elasticsearch;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.OperateLog;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -21,6 +20,8 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -30,11 +31,12 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Arrays;
 import java.util.Objects;
 
-@Slf4j
 @Configuration
 @ConditionalOnBean(name = "enableEs")
 @AutoConfigureAfter(EnableAdvisorConfiguration.class)
 public class ElasticsearchAdvisorConfiguration extends AdvisorBase {
+
+    private final Logger log = LoggerFactory.getLogger(ElasticsearchAdvisorConfiguration.class);
 
     public ElasticsearchAdvisorConfiguration(OperateLog operateLog) {
         super(operateLog);

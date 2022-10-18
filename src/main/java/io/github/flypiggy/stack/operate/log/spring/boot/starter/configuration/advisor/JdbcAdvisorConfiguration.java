@@ -7,7 +7,8 @@ import io.github.flypiggy.stack.operate.log.spring.boot.starter.exception.Operat
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.Jdbc;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.OperateLog;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.utils.JdbcUrlUtils;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -18,11 +19,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-@Slf4j
 @Configuration
 @ConditionalOnBean(name = "enableJdbc")
 @AutoConfigureAfter(EnableAdvisorConfiguration.class)
 public class JdbcAdvisorConfiguration extends AdvisorBase {
+
+    private final Logger log = LoggerFactory.getLogger(JdbcAdvisorConfiguration.class);
 
     private final DataSourceProperties dataSourceProperties;
 
