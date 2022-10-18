@@ -12,7 +12,7 @@ Operate-Log使用starter依赖，实现web接口日志输出到多种存储对�
 <dependency>
    <groupId>io.github.flypiggy-stack</groupId>
    <artifactId>operate-log-spring-boot-starter</artifactId>
-   <version>1.2.2</version>
+   <version>1.2.3</version>
 </dependency>
 ```
 
