@@ -56,4 +56,9 @@ public class OperateLog {
      * e.g. You need throw NullPointerException, configure NullPointerException.
      */
     private String[] thrownExceptionName;
+
+    /**
+     * Whether to use the swagger annotation is not turned on by default.
+     */
+    private Boolean useSwaggerAnnotation = false;
 }

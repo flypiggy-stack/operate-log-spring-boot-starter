@@ -13,6 +13,8 @@ import io.github.flypiggy.stack.operate.log.spring.boot.starter.model.Log;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.ClassInfoEnum;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.Exclude;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.OperateLog;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WebLogAdvice implements MethodInterceptor {
     private static final ObjectMapper objectMapper;
+    private static final JavaType JAVA_TYPE;
 
     /**
      * Interface exclusion.
@@ -59,6 +62,13 @@ public class WebLogAdvice implements MethodInterceptor {
      * Whether to be 'tags' of 'spring.operate-log.class-info-value'
      */
     private final boolean classInfoIsTags;
+
+    static {
+        objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.registerModules(new ParameterNamesModule(), new Jdk8Module(), new JavaTimeModule());
+        JAVA_TYPE = objectMapper.getTypeFactory().constructParametricType(List.class, String.class);
+    }
+
     /**
      * Whether to be null of 'spring.operate-log.exclude'
      */
@@ -76,21 +86,90 @@ public class WebLogAdvice implements MethodInterceptor {
      */
     private final boolean thrownExceptionNameIsNull;
 
-    static {
-        objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.registerModules(new ParameterNamesModule(), new Jdk8Module(), new JavaTimeModule());
-    }
+    /**
+     * Whether to use the swagger annotation.
+     */
+    private final boolean useSwaggerAnnotation;
 
     public WebLogAdvice(DatasourceApi datasourceApi, OperateLog operateLog) {
         this.datasourceApi = datasourceApi;
         this.classInfoEnum = operateLog.getClassInfoValue();
-        this.classInfoIsTags = operateLog.getClassInfoValue().equals(ClassInfoEnum.TAGS);
+        this.useSwaggerAnnotation = operateLog.getUseSwaggerAnnotation();
+        this.classInfoIsTags = this.useSwaggerAnnotation && operateLog.getClassInfoValue().equals(ClassInfoEnum.TAGS);
         checkExclude(operateLog);
         String[] thrownExceptionNameArr = operateLog.getThrownExceptionName();
         thrownExceptionNameSet = thrownExceptionNameArr == null
                 ? Collections.emptySet()
                 : Arrays.stream(thrownExceptionNameArr).collect(Collectors.toSet());
         this.thrownExceptionNameIsNull = thrownExceptionNameSet.isEmpty();
+    }
+
+    private void checkExclude(OperateLog operateLog) {
+        Exclude exclude = operateLog.getExclude();
+        if (Objects.isNull(operateLog.getExclude())) return;
+        excludeIsNull = false;
+        HttpMethod[] httpMethodArr = exclude.getHttpMethod();
+        if (!Objects.isNull(httpMethodArr)) {
+            excludeHttpMethodIsnull = false;
+            excludeHttpMethods = Arrays.stream(httpMethodArr).map(Enum::name).collect(Collectors.toSet());
+        }
+        Map<HttpMethod, String[]> excludeMap = exclude.getApi();
+        if (!Objects.isNull(excludeMap)) {
+            excludeApiIsnull = false;
+            excludeMap.forEach((k, v) -> excludeApiMap.put(k.name(), new HashSet<>(Arrays.asList(v))));
+        }
+    }
+
+    /**
+     * Use class of {@link LogOperatorContext}  to Get Operator
+     */
+    private String getOperator() {
+        return LogOperatorContext.get();
+    }
+
+    /**
+     * Core code logic method.
+     */
+    @Override
+    public Object invoke(MethodInvocation invocation) throws Throwable {
+        long startTime = System.currentTimeMillis();
+        if (Objects.isNull(RequestContextHolder.getRequestAttributes())) {
+            log.warn("OPERATE-LOG The method is not a web interface! " + "If you do not want to see this prompt, you need to reconfigurate 'spring.operate-log.api-package-path' to ensure that only web api methods are in these packages.");
+        }
+        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
+        if (log.isDebugEnabled()) {
+            log.debug("------------------------------------------------------------------------------");
+            log.debug("Request source: {}", getIp(request));
+            log.debug("Operator:       {}", getOperator());
+            log.debug("Request method: {}", request.getMethod());
+            log.debug("Api uri:        {}", request.getRequestURI());
+            log.debug("Request now:    {}", LocalDateTime.now());
+            log.debug("------------------------------------------------------------------------------");
+        }
+        if (isExcludeApi(request.getRequestURI(), request.getMethod())) {
+            log.debug("Api exclude. Request method: {}, URI: {}", request.getRequestURI(), request.getMethod());
+            return invocation.proceed();
+        }
+        Log log = getBaseLogObj(invocation, request);
+        log.setTimeTaken(System.currentTimeMillis() - startTime);
+        try {
+            Object result = invocation.proceed();
+            log.setSuccess(true);
+            log.setResponseBody(Objects.isNull(result) ? null : result.toString());
+            return result;
+        } catch (Throwable throwable) {
+            StackTraceElement[] stackTraceElements = throwable.getStackTrace();
+            StackTraceElement traceElement = stackTraceElements[0];
+            String errorMessage = String.format("%s\n%s", traceElement, throwable);
+            log.setSuccess(false);
+            log.setErrorMessage(errorMessage);
+            if (thrownExceptionNameIsNull || thrownExceptionNameSet.contains(throwable.getClass().getSimpleName())) {
+                throw throwable;
+            }
+        } finally {
+            insert(log);
+        }
+        return null;
     }
 
     /**
@@ -110,9 +189,29 @@ public class WebLogAdvice implements MethodInterceptor {
             if (obj.getClass().isArray()) return objectMapper.writeValueAsString(obj);
             return obj.toString();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("OPERATE-LOG swagger annotation exception occurred in generating class name or method name!");
         }
         return defaultValue;
+    }
+
+    /**
+     * Check whether the api interface is excluded.
+     *
+     * @param uri    uri
+     * @param method http method
+     * @return {@link java.lang.Boolean} true need exclude; false don't need exclude.
+     */
+    private Boolean isExcludeApi(String uri, String method) {
+        if (excludeIsNull) return false;
+        if (!excludeHttpMethodIsnull) {
+            if (excludeHttpMethods.contains(method)) {
+                return true;
+            }
+        }
+        if (excludeApiIsnull) return false;
+        String methodKey = excludeApiMap.keySet().stream().filter(method::equals).findFirst().orElse(null);
+        if (Objects.isNull(methodKey)) return false;
+        return excludeApiMap.get(methodKey).stream().anyMatch(p -> isMatch(uri, p));
     }
 
     /**
@@ -185,119 +284,11 @@ public class WebLogAdvice implements MethodInterceptor {
         return ipAddress;
     }
 
-    private void checkExclude(OperateLog operateLog) {
-        Exclude exclude = operateLog.getExclude();
-        if (Objects.isNull(operateLog.getExclude())) return;
-        excludeIsNull = false;
-        HttpMethod[] httpMethodArr = exclude.getHttpMethod();
-        if (!Objects.isNull(httpMethodArr)) {
-            excludeHttpMethodIsnull = false;
-            excludeHttpMethods = Arrays.stream(httpMethodArr).map(Enum::name).collect(Collectors.toSet());
-        }
-        Map<HttpMethod, String[]> excludeMap = exclude.getApi();
-        if (!Objects.isNull(excludeMap)) {
-            excludeApiIsnull = false;
-            excludeMap.forEach((k, v) -> excludeApiMap.put(k.name(), new HashSet<>(Arrays.asList(v))));
-        }
-    }
-
-    /**
-     * Use class of {@link LogOperatorContext}  to Get Operator
-     */
-    private String getOperator() {
-        return LogOperatorContext.get();
-    }
-
-    private String getClassInfo(Object o) {
-        String classInfo;
-        Class<?> targetClass = o.getClass();
-        classInfo = getAnnotationValue(targetClass.getAnnotation(io.swagger.annotations.Api.class), classInfoEnum.name().toLowerCase(), targetClass.getSimpleName());
-        if (classInfoIsTags) {
-            JavaType javaType = objectMapper.getTypeFactory().constructParametricType(List.class, String.class);
-            if (classInfo.contains("[") && classInfo.contains("\"")) {
-                try {
-                    List<String> list = objectMapper.readValue(classInfo, javaType);
-                    if (!Objects.isNull(list) && !Objects.equals("", list.get(0))) {
-                        classInfo = list.get(0);
-                    }
-                } catch (Exception e) {
-                    throw new OperateLogException("Error get class info!");
-                }
-            }
-        }
-        return classInfo;
-    }
-
     private void insert(Log logVo) {
         if (log.isDebugEnabled()) {
             log.debug("{}", logVo);
         }
         datasourceApi.save(logVo);
-    }
-
-    /**
-     * Core code logic method.
-     */
-    @Override
-    public Object invoke(MethodInvocation invocation) throws Throwable {
-        long startTime = System.currentTimeMillis();
-        if (Objects.isNull(RequestContextHolder.getRequestAttributes())) {
-            log.warn("OPERATE-LOG The method is not a web interface! " + "If you do not want to see this prompt, you need to reconfigurate 'spring.operate-log.api-package-path' to ensure that only web api methods are in these packages.");
-        }
-        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
-        if (log.isDebugEnabled()) {
-            log.debug("------------------------------------------------------------------------------");
-            log.debug("Request source: {}", getIp(request));
-            log.debug("Operator:       {}", getOperator());
-            log.debug("Request method: {}", request.getMethod());
-            log.debug("Api uri:        {}", request.getRequestURI());
-            log.debug("Request now:    {}", LocalDateTime.now());
-            log.debug("------------------------------------------------------------------------------");
-        }
-        if (isExcludeApi(request.getRequestURI(), request.getMethod())) {
-            log.debug("Api exclude. Request method: {}, URI: {}", request.getRequestURI(), request.getMethod());
-            return invocation.proceed();
-        }
-        Log log = getBaseLogObj(invocation, request);
-        log.setTimeTaken(System.currentTimeMillis() - startTime);
-        try {
-            Object result = invocation.proceed();
-            log.setSuccess(true);
-            log.setResponseBody(Objects.isNull(result) ? null : result.toString());
-            return result;
-        } catch (Throwable throwable) {
-            StackTraceElement[] stackTraceElements = throwable.getStackTrace();
-            StackTraceElement traceElement = stackTraceElements[0];
-            String errorMessage = String.format("%s\n%s", traceElement, throwable);
-            log.setSuccess(false);
-            log.setErrorMessage(errorMessage);
-            if (thrownExceptionNameIsNull || thrownExceptionNameSet.contains(throwable.getClass().getSimpleName())) {
-                throw throwable;
-            }
-        } finally {
-            insert(log);
-        }
-        return null;
-    }
-
-    /**
-     * Check whether the api interface is excluded.
-     *
-     * @param uri    uri
-     * @param method http method
-     * @return {@link java.lang.Boolean} true need exclude; false don't need exclude.
-     */
-    private Boolean isExcludeApi(String uri, String method) {
-        if (excludeIsNull) return false;
-        if (!excludeHttpMethodIsnull) {
-            if (excludeHttpMethods.contains(method)) {
-                return true;
-            }
-        }
-        if (excludeApiIsnull) return false;
-        String methodKey = excludeApiMap.keySet().stream().filter(method::equals).findFirst().orElse(null);
-        if (Objects.isNull(methodKey)) return false;
-        return excludeApiMap.get(methodKey).stream().anyMatch(p -> isMatch(uri, p));
     }
 
     /**
@@ -317,7 +308,7 @@ public class WebLogAdvice implements MethodInterceptor {
         log.setClassInfo(classInfo);
         Method method = invocation.getMethod();
         method.setAccessible(true);
-        log.setMethodInfo(getAnnotationValue(method.getAnnotation(io.swagger.annotations.ApiOperation.class), "value", method.getName()));
+        log.setMethodInfo(getMethodInfo(method));
         Object[] arguments = invocation.getArguments();
         if (arguments.length == 1) {
             log.setRequestBody("[" + arguments[0] + "]");
@@ -330,5 +321,41 @@ public class WebLogAdvice implements MethodInterceptor {
             log.setRequestBody(requestStr.toString());
         }
         return log;
+    }
+
+    private String getClassInfo(Object o) {
+        Class<?> targetClass = o.getClass();
+        String classInfo = targetClass.getSimpleName();
+        if (!useSwaggerAnnotation) return classInfo;
+        try {
+            Api annotation = targetClass.getAnnotation(Api.class);
+            classInfo = getAnnotationValue(annotation, classInfoEnum.name().toLowerCase(), targetClass.getSimpleName());
+        } catch (Exception e) {
+            throw new OperateLogException("To obtain swagger annotation exception, please check spring.operate-log.use-swagger-annotation configuration. if true is configured, you need to swagger related dependencies in!");
+        }
+        if (classInfoIsTags) {
+            if (classInfo.contains("[") && classInfo.contains("\"")) {
+                try {
+                    List<String> list = objectMapper.readValue(classInfo, JAVA_TYPE);
+                    if (!Objects.isNull(list) && !Objects.equals("", list.get(0))) {
+                        classInfo = list.get(0);
+                    }
+                } catch (Exception e) {
+                    throw new OperateLogException("Error get class info!");
+                }
+            }
+        }
+        return Objects.isNull(classInfo) || classInfo.trim().isEmpty() || "[\"\"]".equals(classInfo) ? targetClass.getSimpleName() : classInfo;
+    }
+
+    private String getMethodInfo(Method method) {
+        String methodInfo = method.getName();
+        if (useSwaggerAnnotation) {
+            methodInfo = getAnnotationValue(method.getAnnotation(ApiOperation.class), "value", method.getName());
+            if (Objects.isNull(methodInfo) || methodInfo.trim().isEmpty()) {
+                methodInfo = method.getName();
+            }
+        }
+        return methodInfo;
     }
 }
