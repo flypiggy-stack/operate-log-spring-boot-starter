@@ -8,11 +8,11 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.context.LogOperatorContext;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.datasource.DatasourceApi;
-import io.github.flypiggy.stack.operate.log.spring.boot.starter.exception.OperateLogException;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.model.Log;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.ClassInfoEnum;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.Exclude;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.OperateLog;
+import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.PrintLogLevelEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +28,9 @@ import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.PrintLogLevelEnum.ERROR;
+import static io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.PrintLogLevelEnum.WARNING;
 
 /**
  * Core logic code.
@@ -91,9 +94,16 @@ public class WebLogAdvice implements MethodInterceptor {
      */
     private final boolean useSwaggerAnnotation;
 
+    /**
+     * Whether to print the warning log during execution.
+     */
+    private final PrintLogLevelEnum printLogLevel;
+
+
     public WebLogAdvice(DatasourceApi datasourceApi, OperateLog operateLog) {
         this.datasourceApi = datasourceApi;
         this.classInfoEnum = operateLog.getClassInfoValue();
+        this.printLogLevel = operateLog.getPrintLogLevel();
         this.useSwaggerAnnotation = operateLog.getUseSwaggerAnnotation();
         this.classInfoIsTags = this.useSwaggerAnnotation && operateLog.getClassInfoValue().equals(ClassInfoEnum.TAGS);
         checkExclude(operateLog);
@@ -180,7 +190,7 @@ public class WebLogAdvice implements MethodInterceptor {
      * @param defaultValue default value
      * @return {@link String} Annotation method return value.
      */
-    private static String getAnnotationValue(Annotation annotation, String method, String defaultValue) {
+    private String getAnnotationValue(Annotation annotation, String method, String defaultValue) {
         try {
             if (Objects.isNull(annotation)) return defaultValue;
             Method api = annotation.getClass().getDeclaredMethod(Objects.isNull(method) || method.trim().isEmpty() ? "value" : method);
@@ -190,6 +200,7 @@ public class WebLogAdvice implements MethodInterceptor {
             return obj.toString();
         } catch (Exception e) {
             log.warn("OPERATE-LOG swagger annotation exception occurred in generating class name or method name!");
+            commonLogPrint(e);
         }
         return defaultValue;
     }
@@ -221,7 +232,7 @@ public class WebLogAdvice implements MethodInterceptor {
      * @param p matching rule
      * @return {@link Boolean} true is match; false isn`t match.
      */
-    private static Boolean isMatch(String s, String p) {
+    private Boolean isMatch(String s, String p) {
         // Index position of 's'
         int i = 0;
         // Index position of 'p'
@@ -257,7 +268,7 @@ public class WebLogAdvice implements MethodInterceptor {
     /**
      * Get access to real IP.
      */
-    private static String getIp(HttpServletRequest request) {
+    private String getIp(HttpServletRequest request) {
         if (Objects.isNull(request)) {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             request = Objects.requireNonNull(attributes).getRequest();
@@ -330,8 +341,8 @@ public class WebLogAdvice implements MethodInterceptor {
         try {
             Api annotation = targetClass.getAnnotation(Api.class);
             classInfo = getAnnotationValue(annotation, classInfoEnum.name().toLowerCase(), targetClass.getSimpleName());
-        } catch (Exception e) {
-            throw new OperateLogException("To obtain swagger annotation exception, please check spring.operate-log.use-swagger-annotation configuration. if true is configured, you need to swagger related dependencies in!");
+        } catch (Throwable e) {
+            exceptionLogPrint(e);
         }
         if (classInfoIsTags) {
             if (classInfo.contains("[") && classInfo.contains("\"")) {
@@ -341,7 +352,7 @@ public class WebLogAdvice implements MethodInterceptor {
                         classInfo = list.get(0);
                     }
                 } catch (Exception e) {
-                    throw new OperateLogException("Error get class info!");
+                    commonLogPrint(e);
                 }
             }
         }
@@ -351,11 +362,35 @@ public class WebLogAdvice implements MethodInterceptor {
     private String getMethodInfo(Method method) {
         String methodInfo = method.getName();
         if (useSwaggerAnnotation) {
-            methodInfo = getAnnotationValue(method.getAnnotation(ApiOperation.class), "value", method.getName());
+            try {
+                methodInfo = getAnnotationValue(method.getAnnotation(ApiOperation.class), "value", method.getName());
+            } catch (Throwable e) {
+                exceptionLogPrint(e);
+            }
             if (Objects.isNull(methodInfo) || methodInfo.trim().isEmpty()) {
                 methodInfo = method.getName();
             }
         }
         return methodInfo;
+    }
+
+    private void exceptionLogPrint(Throwable e) {
+        if (e instanceof NoClassDefFoundError) {
+            log.error("OPERATE-LOG To obtain swagger annotation exception, please check spring.operate-log.use-swagger-annotation configuration. if true is configured, you need to swagger related dependencies in!");
+        } else {
+            if (WARNING.equals(printLogLevel)) {
+                log.warn("OPERATE-LOG Please report the error message, we will optimize the code after receiving it.");
+            } else if (ERROR.equals(printLogLevel)) {
+                log.error("OPERATE-LOG This exception will not affect your main program flow, but operation logging cannot be saved.", e);
+            }
+        }
+    }
+
+    private void commonLogPrint(Exception e) {
+        if (WARNING.equals(printLogLevel)) {
+            log.warn("OPERATE-LOG Please report the error message, we will optimize the code after receiving it.");
+        } else if (ERROR.equals(printLogLevel)) {
+            log.error("OPERATE-LOG This exception will not affect your main program flow, but operation logging cannot be saved.", e);
+        }
     }
 }

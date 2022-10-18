@@ -1,7 +1,7 @@
 package io.github.flypiggy.stack.operate.log.spring.boot.starter.properties;
 
 
-import org.apache.commons.lang3.time.DateFormatUtils;
+import io.github.flypiggy.stack.operate.log.spring.boot.starter.utils.DateTimeUtils;
 
 import java.util.Date;
 
@@ -23,13 +23,13 @@ public enum DateSuffixEnum {
         String suffix = "";
         switch (suffixEnum) {
             case DAY:
-                suffix = DateFormatUtils.format(new Date(), "yyyy.MM.dd");
+                suffix = DateTimeUtils.format(new Date(), "yyyy.MM.dd");
                 break;
             case MONTH:
-                suffix = DateFormatUtils.format(new Date(), "yyyy.MM");
+                suffix = DateTimeUtils.format(new Date(), "yyyy.MM");
                 break;
             case YEAR:
-                suffix = DateFormatUtils.format(new Date(), "yyyy");
+                suffix = DateTimeUtils.format(new Date(), "yyyy");
         }
         return suffix;
     }

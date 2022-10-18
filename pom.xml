@@ -10,7 +10,7 @@
     </parent>
     <groupId>io.github.flypiggy-stack</groupId>
     <artifactId>operate-log-spring-boot-starter</artifactId>
-    <version>1.2.2</version>
+    <version>1.2.3</version>
     <name>operate-log-spring-boot-starter</name>
     <description>operate-log-spring-boot-starter</description>
     <licenses>
@@ -99,19 +99,15 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>1.6.6</version>
             <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-core</artifactId>
             <version>5.8.7</version>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>1.6.6</version>
         </dependency>
     </dependencies>
     <profiles>
