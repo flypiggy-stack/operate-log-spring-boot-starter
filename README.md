@@ -12,12 +12,12 @@ Operate-Log使用starter依赖，实现web接口日志输出到多种存储对�
 <dependency>
    <groupId>io.github.flypiggy-stack</groupId>
    <artifactId>operate-log-spring-boot-starter</artifactId>
-   <version>1.2.3</version>
+   <version>1.2.4</version>
 </dependency>
 ```
 
 1. 直接引用maven中央仓库依赖
-2. 直接down下代码，mvn deploy到私有nesux或者阿里镜像仓库（一定要放到仓库，不然maven依赖无法传递）
+2. 直接down下代码，mvn deploy到私有nexus或者阿里镜像仓库（一定要放到仓库，不然maven依赖无法传递）
 
 #### 使用说明
 
@@ -31,7 +31,7 @@ Operate-Log使用starter依赖，实现web接口日志输出到多种存储对�
    </dependency>
    ```
 
-2. 配置yml
+2. 配置yml<br>
    提示：jdbc连接信息使用spring-boot的配置
     ```yaml
     spring:
@@ -91,7 +91,7 @@ Operate-Log使用starter依赖，实现web接口日志输出到多种存储对�
     </dependency>
    ```
 
-2. 配置yml
+2. 配置yml<br>
    提示：mongodb连接信息使用spring-boot的配置
     ```yaml
     spring:
@@ -115,7 +115,8 @@ spring:
             put:
                - /xx/xx/xx #put请求方式的，此接口不需要拦截；支持*匹配
          http-method: delete,head,post #delete\head\post请求方式不需要拦截，数组形式
-      thrown-exception-name: ['NullPointerException'] #为空时，抛出所有异常；若指定异常，则只抛出指定的异常
+      use-swagger-annotation: true  #开启操作日志使用swagger注解信息，若使用则需要引入swagger依赖
+      thrown-exception-name: [ 'NullPointerException' ] #为空时，抛出所有异常；若指定异常，则只抛出指定的异常
 ```
 
 #### 操作人
