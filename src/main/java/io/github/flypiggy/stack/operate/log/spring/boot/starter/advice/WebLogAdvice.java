@@ -8,6 +8,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.context.LogOperatorContext;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.datasource.DatasourceApi;
+import io.github.flypiggy.stack.operate.log.spring.boot.starter.exception.OperateLogException;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.model.Log;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.ClassInfoEnum;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.properties.Exclude;
@@ -300,7 +301,11 @@ public class WebLogAdvice implements MethodInterceptor {
         if (log.isDebugEnabled()) {
             log.debug("{}", logVo);
         }
-        datasourceApi.save(logVo);
+        try {
+            datasourceApi.save(logVo);
+        } catch (Exception e) {
+            this.commonLogPrint(e);
+        }
     }
 
     /**
@@ -377,7 +382,7 @@ public class WebLogAdvice implements MethodInterceptor {
 
     private void exceptionLogPrint(Throwable e) {
         if (e instanceof NoClassDefFoundError) {
-            log.error("OPERATE-LOG To obtain swagger annotation exception, please check spring.operate-log.use-swagger-annotation configuration. if true is configured, you need to swagger related dependencies in!");
+            throw new OperateLogException("To obtain swagger annotation exception, please check spring.operate-log.use-swagger-annotation configuration. if true is configured, you need to swagger related dependencies in!", e);
         } else {
             if (WARNING.equals(printLogLevel)) {
                 log.warn("OPERATE-LOG Please report the error message, we will optimize the code after receiving it.");

@@ -1,13 +1,18 @@
 package io.github.flypiggy.stack.operate.log.spring.boot.starter.datasource.impl;
 
 import com.mongodb.client.MongoCollection;
+import io.github.flypiggy.stack.operate.log.spring.boot.starter.advice.WebLogAdvice;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.datasource.DatasourceApi;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.model.Log;
 import org.bson.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 
 public class MongodbRepository implements DatasourceApi {
+
+    private final Logger logger = LoggerFactory.getLogger(WebLogAdvice.class);
 
     private final MongoCollection<Document> mongoCollection;
 
@@ -17,7 +22,11 @@ public class MongodbRepository implements DatasourceApi {
 
     @Override
     public void save(Log log) {
-        mongoCollection.insertOne(log2Document(log));
+        try {
+            mongoCollection.insertOne(log2Document(log));
+        } catch (Exception e) {
+            logger.warn("OPERATE-LOG Mongo insert log record error.This exception will not affect your main program flow, but operation logging cannot be saved.", e);
+        }
     }
 
     private Document log2Document(Log log) {

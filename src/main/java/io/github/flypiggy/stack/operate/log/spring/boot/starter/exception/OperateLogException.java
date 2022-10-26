@@ -9,4 +9,8 @@ public class OperateLogException extends RuntimeException {
     public OperateLogException(String msg) {
         super(msg);
     }
+
+    public OperateLogException(String msg, Throwable throwable) {
+        super(msg, throwable);
+    }
 }
