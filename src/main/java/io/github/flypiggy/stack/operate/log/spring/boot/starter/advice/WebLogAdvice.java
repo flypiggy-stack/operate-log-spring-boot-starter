@@ -21,6 +21,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.StopWatch;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -144,7 +145,8 @@ public class WebLogAdvice implements MethodInterceptor {
      */
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
-        long startTime = System.currentTimeMillis();
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
         if (Objects.isNull(RequestContextHolder.getRequestAttributes())) {
             log.warn("OPERATE-LOG The method is not a web interface! " + "If you do not want to see this prompt, you need to reconfigurate 'spring.operate-log.api-package-path' to ensure that only web api methods are in these packages.");
         }
@@ -163,7 +165,10 @@ public class WebLogAdvice implements MethodInterceptor {
             return invocation.proceed();
         }
         Log log = getBaseLogObj(invocation, request);
-        log.setTimeTaken(System.currentTimeMillis() - startTime);
+        if (stopWatch.isRunning()) {
+            stopWatch.stop();
+            log.setTimeTaken(stopWatch.getTotalTimeMillis());
+        }
         try {
             Object result = invocation.proceed();
             log.setSuccess(true);
