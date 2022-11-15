@@ -24,11 +24,11 @@ public class AdvisorBase {
     protected static final String annotationBase = "(%s || @annotation(io.github.flypiggy.stack.operate.log.spring.boot.starter.annotation.Log)) && !@annotation(io.github.flypiggy.stack.operate.log.spring.boot.starter.annotation.UnLog)";
     protected final OperateLog operateLog;
 
-    public AdvisorBase(OperateLog operateLog) {
+    protected AdvisorBase(OperateLog operateLog) {
         this.operateLog = operateLog;
     }
 
-    public AspectJExpressionPointcutAdvisor getPointcutAdvisor(DatasourceApi datasourceApi) {
+    protected AspectJExpressionPointcutAdvisor getPointcutAdvisor(DatasourceApi datasourceApi) {
         this.checkProperties();
         AspectJExpressionPointcutAdvisor advisor = new AspectJExpressionPointcutAdvisor();
         advisor.setAdvice(new WebLogAdvice(datasourceApi, operateLog));

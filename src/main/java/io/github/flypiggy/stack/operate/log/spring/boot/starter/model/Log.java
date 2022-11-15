@@ -173,4 +173,24 @@ public class Log {
     public void setUpdateTime(ZonedDateTime updateTime) {
         this.updateTime = updateTime;
     }
+
+    @Override
+    public String toString() {
+        return "Log{" +
+                "id=" + id +
+                ", ip='" + ip + '\'' +
+                ", operator='" + operator + '\'' +
+                ", method='" + method + '\'' +
+                ", uri='" + uri + '\'' +
+                ", classInfo='" + classInfo + '\'' +
+                ", methodInfo='" + methodInfo + '\'' +
+                ", success=" + success +
+                ", requestBody='" + requestBody + '\'' +
+                ", responseBody='" + responseBody + '\'' +
+                ", errorMessage='" + errorMessage + '\'' +
+                ", timeTaken=" + timeTaken +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                '}';
+    }
 }

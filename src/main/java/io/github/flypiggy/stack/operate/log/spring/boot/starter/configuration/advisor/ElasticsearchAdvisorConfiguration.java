@@ -46,7 +46,7 @@ public class ElasticsearchAdvisorConfiguration extends AdvisorBase {
     public AspectJExpressionPointcutAdvisor esConfigurableAdvisor() {
         ElasticsearchClient client = this.getElasticsearchClient(operateLog.getElasticsearch());
         Elasticsearch.Index index = operateLog.getElasticsearch().getIndex();
-        return getPointcutAdvisor(new ElasticsearchRepository(client, index));
+        return super.getPointcutAdvisor(new ElasticsearchRepository(client, index));
     }
 
     private ElasticsearchClient getElasticsearchClient(Elasticsearch elasticsearch) {
