@@ -1,7 +1,6 @@
 package io.github.flypiggy.stack.operate.log.spring.boot.starter.datasource.impl;
 
 import com.mongodb.client.MongoCollection;
-import io.github.flypiggy.stack.operate.log.spring.boot.starter.advice.WebLogAdvice;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.datasource.DatasourceApi;
 import io.github.flypiggy.stack.operate.log.spring.boot.starter.model.Log;
 import org.bson.Document;
@@ -12,7 +11,7 @@ import java.time.ZonedDateTime;
 
 public class MongodbRepository implements DatasourceApi {
 
-    private final Logger logger = LoggerFactory.getLogger(WebLogAdvice.class);
+    private final Logger logger = LoggerFactory.getLogger(MongodbRepository.class);
 
     private final MongoCollection<Document> mongoCollection;
 
